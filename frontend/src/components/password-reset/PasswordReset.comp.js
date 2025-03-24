@@ -5,13 +5,13 @@ import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 
 
 
-const LoginForm = ({handleOnchange,handleOnSubmit, formSwitcher, email, password }) => {
+const ResetPassword = ({handleOnchange,handleOnSubmit, formSwitcher, email }) => {
   return (
     <Container>
       <Row className="justify-content-center">
         <Col md={6}>
           <div className="p-4 shadow rounded bg-white">
-            <h1 className="text-center">Client Login</h1>
+            <h1 className="text-center">Reset Password</h1>
             <hr />
             <Form autoComplete='off' onSubmit={handleOnSubmit}>
               <Form.Group>
@@ -25,23 +25,15 @@ const LoginForm = ({handleOnchange,handleOnSubmit, formSwitcher, email, password
                   required
                 />
               </Form.Group>
-              <Form.Group>
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  name="password"
-                  value={password}
-                  onChange = {handleOnchange}
-                  placeholder="Password"
-                  required
-                  
-                />
-              </Form.Group>
-              <Button type="submit" className="w-100 mt-3">Login</Button>
+              
+
+
+              <Button type="submit" className="w-100 mt-3">Reset Password</Button>
             </Form>
             <hr />
             <div className="text-center">
-              <a href="#!" onClick={() => formSwitcher('reset')}>Forget Password?</a>
+            <a href="#!" onClick={() => formSwitcher('login')}>Login Now</a>
+
             </div>
           </div>
         </Col>
@@ -50,11 +42,11 @@ const LoginForm = ({handleOnchange,handleOnSubmit, formSwitcher, email, password
   );
 };
 
-export default LoginForm;
-LoginForm.propTypes = {
+export default ResetPassword;
+ResetPassword.propTypes = {
     handleOnchange: PropTypes.func.isRequired,
     handleOnSubmit: PropTypes.func.isRequired,
     formSwitcher: PropTypes.func.isRequired,
-    email: PropTypes.string.isRequired,
-    password: PropTypes.string.isRequired
+    email: PropTypes.string.isRequired
+    
 }
