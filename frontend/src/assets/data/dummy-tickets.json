@@ -1,0 +1,80 @@
+[
+    {
+      "id": 1,
+      "subject": "Email certificate expired",
+      "status": "Client response pending",
+      "addedAt": "2024-11-05",
+      "history": [
+        {
+          "date": "2024-11-06",
+          "message": "Hi, we noticed your SSL certificate has expired. Please renew it ASAP.",
+          "messageBy": "client"
+        },
+        {
+          "date": "2024-11-07",
+          "message": "Thanks for reporting. We've escalated the issue to the infrastructure team.",
+          "messageBy": "operator"
+        },
+        {
+          "date": "2024-11-08",
+          "message": "Any update on this? Our email service is still down.",
+          "messageBy": "client"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "subject": "Issue with Email certificate",
+      "status": "Client response pending",
+      "addedAt": "2024-11-02"
+    },
+    {
+      "id": 3,
+      "subject": "App crashes on login",
+      "status": "Client response pending",
+      "addedAt": "2024-10-29"
+    },
+    {
+      "id": 4,
+      "subject": "SSL certificate renewal reminder",
+      "status": "Client response pending",
+      "addedAt": "2024-11-01"
+    },
+    {
+      "id": 5,
+      "subject": "Dashboard not loading on mobile",
+      "status": "Client response pending",
+      "addedAt": "2024-10-31"
+    },
+    {
+      "id": 6,
+      "subject": "2FA not working on some accounts",
+      "status": "Client response pending",
+      "addedAt": "2024-11-03"
+    },
+    {
+      "id": 7,
+      "subject": "Unable to reset password",
+      "status": "Client response pending",
+      "addedAt": "2024-11-04"
+    },
+    {
+      "id": 8,
+      "subject": "Payment gateway timeout error",
+      "status": "Client response pending",
+      "addedAt": "2024-10-28"
+    },
+    {
+      "id": 9,
+      "subject": "Broken image links on homepage",
+      "status": "Client response pending",
+      "addedAt": "2024-10-27"
+    },
+    {
+      "id": 10,
+      "subject": "Email notifications not being received",
+      "status": "Client response pending",
+      "addedAt": "2024-11-01"
+    }
+  ]
+  
