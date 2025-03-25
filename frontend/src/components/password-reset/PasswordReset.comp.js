@@ -5,7 +5,7 @@ import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 
 
 
-const ResetPassword = ({handleOnchange,handleOnSubmit, formSwitcher, email }) => {
+const ResetPassword = ({handleOnchange,handleOnResetSubmit, formSwitcher, email }) => {
   return (
     <Container>
       <Row className="justify-content-center">
@@ -13,7 +13,7 @@ const ResetPassword = ({handleOnchange,handleOnSubmit, formSwitcher, email }) =>
           <div className="p-4 shadow rounded bg-white">
             <h1 className="text-center">Reset Password</h1>
             <hr />
-            <Form autoComplete='off' onSubmit={handleOnSubmit}>
+            <Form autoComplete='off' onSubmit={handleOnResetSubmit}>
               <Form.Group>
                 <Form.Label>Email Address</Form.Label>
                 <Form.Control
@@ -45,7 +45,7 @@ const ResetPassword = ({handleOnchange,handleOnSubmit, formSwitcher, email }) =>
 export default ResetPassword;
 ResetPassword.propTypes = {
     handleOnchange: PropTypes.func.isRequired,
-    handleOnSubmit: PropTypes.func.isRequired,
+    handleOnResetSubmit: PropTypes.func.isRequired,
     formSwitcher: PropTypes.func.isRequired,
     email: PropTypes.string.isRequired
     
