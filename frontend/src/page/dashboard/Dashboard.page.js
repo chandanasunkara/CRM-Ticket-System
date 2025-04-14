@@ -1,18 +1,18 @@
-import React, { useEffect } from "react";
-// import { useSelector, useDispatch } from "react-redux";
+import React from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import { TicketTable } from "../../components/ticket-table/TicketTable.comp";
 import tickets from '../../assets/data/dummy-tickets.json';
-// import { PageBreadcrumb } from "../../components/breadcrumb/Breadcrumb.comp";
-// import { Link } from "react-router-dom";
-
-// import { fetchAllTickets } from "../ticket-list/ticketsAction";
+import  {PageBreadcrumb}  from "../../components/breadcrumb/Breadcrumb.comp";
 
 const Dashboard = () => {
   
   return (
     <Container>
-     
+      <Row>
+        <Col>
+          <PageBreadcrumb page="Dashboard" />
+        </Col>
+      </Row>
       <Row>
         <Col className="text-center mt-5 mb-2">
           
