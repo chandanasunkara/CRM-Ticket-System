@@ -8,103 +8,21 @@ const asyncHandler = require('../middleware/async');
 // @route   GET /api/tickets
 // @access  Private
 exports.getTickets = asyncHandler(async (req, res, next) => {
-  let query;
-
-  // Copy req.query
-  const reqQuery = { ...req.query };
-
-  // Fields to exclude
-  const removeFields = ['select', 'sort', 'page', 'limit'];
-
-  // Loop over and remove fields
-  removeFields.forEach(param => delete reqQuery[param]);
-
-  // Create query string
-  let queryStr = JSON.stringify(reqQuery);
-
-  // Create operators ($gt, $gte, etc)
-  queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
-
-  // Finding resource
-  query = Ticket.find(JSON.parse(queryStr));
-
   // Add role-based filtering
   if (req.user.role === 'customer') {
     // Customers can only see their own tickets
-    query = query.find({ customer: req.user.id });
+    req.query.customer = req.user.id;
   } else if (req.user.role === 'agent') {
     // Agents can see tickets assigned to them or unassigned
-    query = query.find({
-      $or: [
-        { assignedTo: req.user.id },
-        { assignedTo: { $exists: false } },
-        { assignedTo: null }
-      ]
-    });
+    req.query.$or = [
+      { assignedTo: req.user.id },
+      { assignedTo: { $exists: false } },
+      { assignedTo: null }
+    ];
   }
   // Admins can see all tickets
 
-  // Select Fields
-  if (req.query.select) {
-    const fields = req.query.select.split(',').join(' ');
-    query = query.select(fields);
-  }
-
-  // Sort
-  if (req.query.sort) {
-    const sortBy = req.query.sort.split(',').join(' ');
-    query = query.sort(sortBy);
-  } else {
-    query = query.sort('-createdAt');
-  }
-
-  // Pagination
-  const page = parseInt(req.query.page, 10) || 1;
-  const limit = parseInt(req.query.limit, 10) || 25;
-  const startIndex = (page - 1) * limit;
-  const endIndex = page * limit;
-  const total = await Ticket.countDocuments();
-
-  query = query.skip(startIndex).limit(limit);
-
-  // Populate
-  query = query.populate({
-    path: 'customer',
-    select: 'name email'
-  }).populate({
-    path: 'assignedTo',
-    select: 'name email'
-  }).populate({
-    path: 'comments.user',
-    select: 'name email role'
-  });
-
-  // Executing query
-  const tickets = await query;
-
-  // Pagination result
-  const pagination = {};
-
-  if (endIndex < total) {
-    pagination.next = {
-      page: page + 1,
-      limit
-    };
-  }
-
-  if (startIndex > 0) {
-    pagination.prev = {
-      page: page - 1,
-      limit
-    };
-  }
-
-  res.status(200).json({
-    success: true,
-    count: tickets.length,
-    pagination,
-    data: tickets
-  });
+  res.status(200).json(res.advancedResults);
 });
 
 // @desc    Get single ticket

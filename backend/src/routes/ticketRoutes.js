@@ -9,13 +9,22 @@ const {
   addComment
 } = require('../controllers/ticketController');
 const { protect, authorize } = require('../middleware/auth');
+const advancedResults = require('../middleware/advancedResults');
+const Ticket = require('../models/Ticket');
 
 // Apply authentication to all routes
 router.use(protect);
 
 // Ticket routes
 router.route('/')
-  .get(getTickets)
+  .get(
+    advancedResults(Ticket, [
+      { path: 'customer', select: 'name email' },
+      { path: 'assignedTo', select: 'name email' },
+      { path: 'comments.user', select: 'name email role' }
+    ]), 
+    getTickets
+  )
   .post(createTicket);
 
 router.route('/:id')
