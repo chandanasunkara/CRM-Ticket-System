@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from "react";
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, Button } from "react-bootstrap";
 import { TicketTable } from "../../components/ticket-table/TicketTable.comp";
 import tickets from '../../assets/data/dummy-tickets.json';
 import Chart from 'chart.js/auto';
+import  {PageBreadcrumb}  from "../../components/breadcrumb/Breadcrumb.comp";
 
 const Dashboard = () => {
   const chartRef1 = useRef(null);
@@ -81,6 +82,17 @@ const Dashboard = () => {
             <div>Completed: {completedTickets}</div>
             <div>Pending: {pendingTickets}</div>
           </div>
+        </Col>
+        <Col>
+          <PageBreadcrumb page="Dashboard" />
+        </Col>
+        <Col className="text-center mt-5 mb-2">
+          
+            <Button
+              variant="success"
+              style={{ fontSize: "2rem", padding: "10px 30px" }}>
+              Add New Ticket
+            </Button>
         </Col>
         <Col md={6}>
           <div style={{ fontSize: '1rem' }}>Total Tickets: {totalStatusTickets}</div>
