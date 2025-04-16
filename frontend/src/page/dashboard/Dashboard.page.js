@@ -82,7 +82,7 @@ const Dashboard = () => {
             <div>Completed: {completedTickets}</div>
             <div>Pending: {pendingTickets}</div>
           </div>
-              <Row>
+        </Col>
         <Col>
           <PageBreadcrumb page="Dashboard" />
         </Col>
