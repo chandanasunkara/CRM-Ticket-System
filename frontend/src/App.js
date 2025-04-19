@@ -1,3 +1,6 @@
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 
 import './App.css';
 
@@ -12,11 +15,38 @@ import {AddTicket} from "./page/new-ticket/AddTicket.page";
 
 function App() {
   return (
-    <div className="App">
-      <DefaultLayout >
-        <Dashboard/>
-      </DefaultLayout>
-    </div>
+    <Router>
+  <Routes>
+    <Route path="/" element={<Entry />} />
+    <Route
+      path="/dashboard"
+      element={
+        <DefaultLayout>
+          <Dashboard />
+        </DefaultLayout>
+      }
+    />
+    <Route
+      path="/add-ticket"
+      element={
+        <DefaultLayout>
+          <AddTicket />
+        </DefaultLayout>
+      }
+    />
+    <Route
+      path="/ticket/:tid"
+      element={
+        <DefaultLayout>
+          <TicketConversations/>
+        </DefaultLayout>
+      }
+    />
+    
+  </Routes>
+</Router>
+
+    
   );
 }
 

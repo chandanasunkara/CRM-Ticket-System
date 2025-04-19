@@ -5,6 +5,7 @@ import tickets from '../../assets/data/dummy-tickets.json';
 import Chart from 'chart.js/auto';
 import  {PageBreadcrumb}  from "../../components/breadcrumb/Breadcrumb.comp";
 
+
 const Dashboard = () => {
   const chartRef1 = useRef(null);
   const chartRef2 = useRef(null);
@@ -72,51 +73,66 @@ const Dashboard = () => {
 
   return (
     <Container>
-      <Row className="mt-5 mb-4 text-center">
-        <Col md={6}>
-          <div style={{ fontSize: '1rem' }}>Total Tickets: {totalTickets}</div>
-          <div style={{ width: '300px', height: '300px', margin: '0 auto' }}>
-            <canvas ref={chartRef1}></canvas>
-          </div>
-          <div style={{ fontSize: '1rem', marginTop: '10px' }}>
-            <div>Completed: {completedTickets}</div>
-            <div>Pending: {pendingTickets}</div>
-          </div>
-        </Col>
-        <Col>
-          <PageBreadcrumb page="Dashboard" />
-        </Col>
-        <Col className="text-center mt-5 mb-2">
-          
-            <Button
-              variant="success"
-              style={{ fontSize: "2rem", padding: "10px 30px" }}>
-              Add New Ticket
-            </Button>
-        </Col>
-        <Col md={6}>
-          <div style={{ fontSize: '1rem' }}>Total Tickets: {totalStatusTickets}</div>
-          <div style={{ width: '300px', height: '300px', margin: '0 auto' }}>
-            <canvas ref={chartRef2}></canvas>
-          </div>
-          <div style={{ fontSize: '1rem', marginTop: '10px' }}>
-            <div>Active: {activeTickets}</div>
-            <div>Inactive: {inactiveTickets}</div>
-          </div>
-        </Col>
-      </Row>
 
-      <Row>
-        <Col className="mt-2" style={{ fontSize: '1.2rem', fontWeight: '500' }}>Recently Added tickets</Col>
-      </Row>
-      <hr />
+  {/* Breadcrumb Row */}
+  <Row className="mt-3">
+    <Col>
+      <PageBreadcrumb page="Dashboard" />
+    </Col>
+  </Row>
 
-      <Row>
-        <Col className="recent-ticket" style={{ fontSize: '1.1rem' }}>
-          <TicketTable tickets={tickets} />
-        </Col>
-      </Row>
-    </Container>
+  {/* Charts Row */}
+  <Row className="mt-4 text-center">
+    <Col md={6}>
+      <div>Total Tickets: {totalTickets}</div>
+      <div style={{ width: '300px', height: '300px', margin: '0 auto' }}>
+        <canvas ref={chartRef1}></canvas>
+      </div>
+      <div style={{ marginTop: '10px' }}>
+        <div>Completed: {completedTickets}</div>
+        <div>Pending: {pendingTickets}</div>
+      </div>
+    </Col>
+
+    <Col md={6}>
+      <div>Total Status: {totalStatusTickets}</div>
+      <div style={{ width: '300px', height: '300px', margin: '0 auto' }}>
+        <canvas ref={chartRef2}></canvas>
+      </div>
+      <div style={{ marginTop: '10px' }}>
+        <div>Active: {activeTickets}</div>
+        <div>Inactive: {inactiveTickets}</div>
+      </div>
+    </Col>
+  </Row>
+
+  {/* Button Row */}
+  <Row className="text-center my-4">
+    <Col>
+      <Button
+        variant="success"
+        style={{ fontSize: "1.5rem", padding: "10px 30px" }}
+      >
+        Add New Ticket
+      </Button>
+    </Col>
+  </Row>
+
+  {/* Table Section */}
+  <Row>
+    <Col className="mt-2" style={{ fontSize: '1.2rem', fontWeight: '500' }}>
+      Recently Added tickets
+    </Col>
+  </Row>
+  <hr />
+  <Row>
+    <Col className="recent-ticket" style={{ fontSize: '1.1rem' }}>
+      <TicketTable tickets={tickets} />
+    </Col>
+  </Row>
+
+</Container>
+
   );
 };
 
