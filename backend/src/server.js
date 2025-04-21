@@ -4,7 +4,7 @@ const cors = require("cors");
 const connectDB = require("./config/db"); // Import the MongoDB connection
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
-
+const { metricsRoute } = require('./middleware/metrics');
 
 const User = require('./models/Users.js')
 
@@ -12,6 +12,7 @@ const User = require('./models/Users.js')
 const app = express();
 app.use(express.json());
 app.use(cors());
+app.use(metricsRoute)
 
 console.log("MONGO_URI:", process.env.MONGO_URI);
 
