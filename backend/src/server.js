@@ -1,54 +1,83 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require('cookie-parser');
 const connectDB = require("./config/db"); // Import the MongoDB connection
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
+
 const { metricsRoute } = require('./middleware/metrics');
 
-const User = require('./models/Users.js')
 
+// Import routes
+const userRoutes = require('./routes/userRoutes');
+const ticketRoutes = require('./routes/ticketRoutes');
+const customerRoutes = require('./routes/customerRoutes');
+const authRoutes = require('./routes/authRoutes');
 
+// Initialize Express app
 const app = express();
-app.use(express.json());
-app.use(cors());
+
 app.use(metricsRoute)
 
-console.log("MONGO_URI:", process.env.MONGO_URI);
+
+// Middleware
+app.use(express.json());
+app.use(cookieParser());
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true
+}));
 
 // Connect to MongoDB
 connectDB();
 
+// Debug MongoDB connection
+console.log("MONGO_URI:", process.env.MONGO_URI);
+
+// Health check route
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "success",
+    message: "API is running",
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Base route
 app.get("/", (req, res) => {
-  res.send("Ticket API is running!");
+  res.send("CRM Ticket System API is running!");
 });
 
-app.post("/register", async (req, res) => {
-  try {
-    console.log("test test test")
-    const hashedPassword = await bcrypt.hash(req.body.password, 10)
-    const newUser = new User({
-      firstname: req.body.firstname,
-      lastname: req.body.lastname,
-      username: req.body.username,
-      password: hashedPassword
-    });
-    console.log("Creating new user with username: " + req.body.username);
-    const savedUser = await newUser.save();
-    res.status(201).json(savedUser);
-  } catch (err) {
-    res.status(500).json({message: "Error creating user", error: err})
-  }
+// API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/tickets', ticketRoutes);
+app.use('/api/customers', customerRoutes);
+
+// Handle 404 errors
+app.use((req, res) => {
+  res.status(404).json({
+    status: "error",
+    message: "Route not found"
+  });
 });
 
-app.get("/users", async (req, res) => {
-  try {
-    const users = await User.find();
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({message: "Error fetching users", error: err})
-  } 
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    status: "error",
+    message: err.message || "Something went wrong on the server",
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack })
+  });
 });
 
+// Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('UNHANDLED REJECTION! Shutting down...');
+  console.error(err.name, err.message);
+  process.exit(1);
+});
