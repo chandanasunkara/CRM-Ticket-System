@@ -1,8 +1,8 @@
-import React ,{useState} from 'react';
+import React ,{useState, useEffect} from 'react';
 import { Container } from 'react-bootstrap';
 import LoginForm from '../../components/login/Login.comp';
 import ResetPassword from '../../components/password-reset/PasswordReset.comp';
-
+import Chatbot from '../../components/FaqChatbot/chatbot.comp';
 import './entry.style.css';
 
 export const Entry = () => {
@@ -15,6 +15,19 @@ const [password, setPassword] = useState('');
 // eslint-disable-next-line no-unused-vars
 const [frmLoad, setfrmLoad] = useState('login');
  
+
+useEffect(() => {
+  const script = document.createElement('script');
+  script.src = './chatbot.js'; // must be inside /public
+  script.async = true;
+  document.body.appendChild(script);
+
+  return () => {
+    document.body.removeChild(script);
+  };
+}, []);
+
+
 const handleOnchange= e =>{
     const {name,value} = e.target;
 
@@ -58,26 +71,30 @@ const handleOnchange= e =>{
   };
 
   return (
-    <div className="entry-page bg-success d-flex justify-content-center align-items-center vh-100">
-      <Container className="d-flex justify-content-center">
-        {frmLoad === 'login' && 
-       <LoginForm 
-       handleOnchange={handleOnchange}
-       handleOnSubmit={handleOnSubmit}
-       formSwitcher = {formSwitcher}
-       email = {email}
-       password = {password}
-       />}
-       {frmLoad === 'reset' &&
-       <ResetPassword 
-       handleOnchange={handleOnchange}
-       handleOnRsetSubmit={handleOnResetSubmit}
-       formSwitcher = {formSwitcher}
-       email = {email}
-       />}
-      </Container>
-    </div>
-  );
+    
+      <div className="entry-page bg-success d-flex justify-content-center align-items-center vh-100">
+        <Container className="d-flex justify-content-center">
+          {frmLoad === 'login' && 
+            <LoginForm 
+              handleOnchange={handleOnchange}
+              handleOnSubmit={handleOnSubmit}
+              formSwitcher={formSwitcher}
+              email={email}
+              password={password}
+            />}
+          {frmLoad === 'reset' &&
+            <ResetPassword 
+              handleOnchange={handleOnchange}
+              handleOnResetSubmit={handleOnResetSubmit}
+              formSwitcher={formSwitcher}
+              email={email}
+            />}
+        </Container>
+    
+        <Chatbot />
+      </div>
+    );
+    
 };
 
 
