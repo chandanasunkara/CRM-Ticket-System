@@ -4,7 +4,7 @@ import { TicketTable } from "../../components/ticket-table/TicketTable.comp";
 import tickets from '../../assets/data/dummy-tickets.json';
 import Chart from 'chart.js/auto';
 import  {PageBreadcrumb}  from "../../components/breadcrumb/Breadcrumb.comp";
-import Chatbot from "../../components/FaqChatbot/chatbot.comp";
+//import Chatbot from "../../components/FaqChatbot/chatbot.comp";
 
 
 const Dashboard = () => {
@@ -131,7 +131,7 @@ const Dashboard = () => {
       <TicketTable tickets={tickets} />
     </Col>
   </Row>
-  <Chatbot />
+  
 
 </Container>
 

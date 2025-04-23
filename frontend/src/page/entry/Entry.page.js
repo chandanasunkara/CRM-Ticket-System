@@ -2,7 +2,6 @@ import React ,{useState, useEffect} from 'react';
 import { Container } from 'react-bootstrap';
 import LoginForm from '../../components/login/Login.comp';
 import ResetPassword from '../../components/password-reset/PasswordReset.comp';
-import Chatbot from '../../components/FaqChatbot/chatbot.comp';
 import './entry.style.css';
 
 export const Entry = () => {
@@ -91,7 +90,7 @@ const handleOnchange= e =>{
             />}
         </Container>
     
-        <Chatbot />
+        
       </div>
     );
     
