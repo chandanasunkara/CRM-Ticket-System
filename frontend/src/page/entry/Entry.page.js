@@ -1,6 +1,7 @@
 import React ,{useState, useEffect} from 'react';
 import LoginForm from '../../components/login/Login.comp';
 import ResetPassword from '../../components/password-reset/PasswordReset.comp';
+// import Chatbot from '../../components/FaqChatbot/chatbot.comp';
 import networkMap from '../../assets/img/network-map.png';
 import './entry.style.css';
 
@@ -11,17 +12,6 @@ export const Entry = () => {
 
   const [frmLoad, setfrmLoad] = useState('login');
 
-  useEffect(() => {
-    const script = document.createElement('script');
-
-    script.src = './chatbot.js';
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
 
 
   const handleOnchange= e =>{
