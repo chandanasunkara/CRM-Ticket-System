@@ -55,19 +55,40 @@ export const AddTicketForm = () => {
       <hr />
 
       <Form autoComplete="off" onSubmit={handleOnSubmit}>
-        <Form.Group as={Row}>
+        <Form.Group as={Row} className="mb-3">
           <Form.Label column sm={3}>
             Subject
           </Form.Label>
           <Col sm={9}>
-            <Form.Control
-              name="subject"
-              value={frmData.subject}
-              maxLength="100"
-              onChange={handleOnChange}
-              placeholder="Subject"
-              required
-            />
+          <Form.Select
+  name="subject"
+  value={frmData.subject}
+  onChange={handleOnChange}
+  required
+>
+<option value="">-- Select Issue Subject --</option>
+  <option>Login or Access Issues</option>
+  <option>Password Reset Request</option>
+  <option>Email Notification Not Received</option>
+  
+  
+  <option>Invoice or Billing Discrepancy</option>
+  <option>Customer Profile Update Request</option>
+  <option>CRM Dashboard Not Loading</option>
+  <option>Duplicate or Missing Records</option>
+  
+  <option>Permission or Role Issue</option>
+  <option>API Access Request or Failure</option>
+  <option>New Feature Request</option>
+ 
+  <option>Mobile App Not Syncing</option>
+  <option>Lead Assignment Problem</option>
+  <option>Report Generation Issue</option>
+  
+  <option>Account Deactivation Request</option>
+  <option>Other Technical Issues</option>
+</Form.Select>
+
             <Form.Text className="text-danger">
               {frmDataErro.subject && "Subject is required!"}
             </Form.Text>
@@ -75,7 +96,7 @@ export const AddTicketForm = () => {
         </Form.Group>
         <Form.Group as={Row}>
           <Form.Label column sm={3}>
-            Issue Found
+            Date
           </Form.Label>
           <Col sm={9}>
             <Form.Control
@@ -88,7 +109,7 @@ export const AddTicketForm = () => {
           </Col>
         </Form.Group>
         <Form.Group>
-          <Form.Label>Message</Form.Label>
+          <Form.Label>Issue Found</Form.Label>
           <Form.Control
             as="textarea"
             name="message"

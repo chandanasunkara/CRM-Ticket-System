@@ -5,7 +5,7 @@ import tickets from '../../assets/data/dummy-tickets.json';
 import Chart from 'chart.js/auto';
 import  {PageBreadcrumb}  from "../../components/breadcrumb/Breadcrumb.comp";
 //import Chatbot from "../../components/FaqChatbot/chatbot.comp";
-
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
   const chartRef1 = useRef(null);
@@ -110,12 +110,14 @@ const Dashboard = () => {
   {/* Button Row */}
   <Row className="text-center my-4">
     <Col>
+    <Link to="/add-ticket">
       <Button
         variant="success"
         style={{ fontSize: "1.5rem", padding: "10px 30px" }}
       >
         Add New Ticket
       </Button>
+      </Link>
     </Col>
   </Row>
 
