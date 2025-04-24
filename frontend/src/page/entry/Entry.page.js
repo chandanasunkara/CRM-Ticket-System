@@ -1,6 +1,7 @@
 import React ,{useState, useEffect} from 'react';
 import LoginForm from '../../components/login/Login.comp';
 import ResetPassword from '../../components/password-reset/PasswordReset.comp';
+import networkMap from '../../assets/img/network-map.png';
 import './entry.style.css';
 
 export const Entry = () => {
@@ -66,8 +67,10 @@ export const Entry = () => {
 
  return (
   <div className="entry-page">
-    <div className="left-panel">
-      <img src={require('../../assets/img/network-map.png')} alt="network-map" className="network-image" />
+
+  <div className="left-panel">
+  <img src={networkMap} alt="network-map" className="network-image" />
+
 
       <h1>Hello CRM! 👋</h1>
       <p>From Chaos to Clarity — Your Smart CRM for Smarter Customer Journeys..<br />
