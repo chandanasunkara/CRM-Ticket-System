@@ -41,7 +41,7 @@ const LoginForm = ({handleOnchange,handleOnSubmit, formSwitcher, email, password
             </Form>
             <hr />
             <div className="text-center">
-              <a href="#!" onClick={() => formSwitcher('reset')}>Forget Password?</a>
+              <a href="#!" onClick={() => formSwitcher('reset')}>Forgot Password?</a>
             </div>
           </div>
         </Col>
