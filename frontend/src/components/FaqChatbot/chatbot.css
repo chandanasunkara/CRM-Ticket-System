@@ -1,0 +1,70 @@
+.chatbot-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.chatbot-toggle {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.chatbot-window-wrapper.closed {
+  display: none;
+}
+
+.chatbot-window-wrapper.open {
+  display: block;
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 300px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.chatbot-window {
+  display: flex;
+  flex-direction: column;
+  height: 350px;
+}
+
+.chatbot-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  font-size: 14px;
+  color: #333;
+  background-color: #f9f9f9;
+}
+
+.msg.user {
+  text-align: right;
+  color: #007bff;
+  margin-bottom: 8px;
+}
+
+.msg.bot {
+  text-align: left;
+  color: #28a745;
+  margin-bottom: 8px;
+}
+
+.chatbot-window input {
+  border: none;
+  border-top: 1px solid #ddd;
+  padding: 10px;
+  font-size: 14px;
+  outline: none;
+  width: 100%;
+}
