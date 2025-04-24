@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('./async');
-const ErrorResponse = require('../utils/errorResponse');
-const User = require('../models/User');
+const ErrorResponse = require('../util/errorResponse');
+const User = require('../models/Users');
 
 // Protect routes
 exports.protect = asyncHandler(async (req, res, next) => {
