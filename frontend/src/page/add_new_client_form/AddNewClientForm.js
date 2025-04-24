@@ -24,7 +24,16 @@ const AddNewClient = () => {
     };
 
     return (
-        <div style={{ maxWidth: "400px", margin: "auto" }}>
+        <div style={{ 
+            maxWidth: "500px", 
+            margin: "40px auto", 
+            padding: "20px", 
+            border: "1px solid #ddd", 
+            borderRadius: "10px", 
+            boxShadow: "0px 2px 10px rgba(0,0,0,0.1)", 
+            backgroundColor: "#fff" 
+          }}>
+          
             <h3>Add New Client</h3>
             <form onSubmit={handleSubmit}>
                 <div style={{ marginBottom: "10px" }}>
@@ -98,8 +107,9 @@ const AddNewClient = () => {
                     width: "100%", 
                     marginBottom: "10px",
                     padding: "10px", 
-                    backgroundColor: isFormValid ? "#ffcccc" : "#FFD6D1", 
-                    border: "1px solid #f5c6cb", 
+                    backgroundColor: isFormValid ? "#28a745" : "#c3e6cb", 
+                    border: "1px solid #28a745", 
+                    color: "#fff",
                     cursor: isFormValid ? "pointer" : "not-allowed" 
                 }}>
                     Add New Client
@@ -109,7 +119,8 @@ const AddNewClient = () => {
     );
 
     function emailIsValid(email) {
-        return /([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/.test(email);
+        return /([a-zA-Z0-9_.-]+)@([a-zA-Z0-9_.-]+)\.([a-zA-Z]{2,5})$/.test(email);
+
     }
 
     function phoneIsValid(phone) {

@@ -1,9 +1,9 @@
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const ErrorResponse = require('../utils/errorResponse');
+const User = require('../models/Users');
+const ErrorResponse = require('../util/errorResponse');
 const asyncHandler = require('../middleware/async');
-const sendEmail = require('../utils/sendEmail');
+const sendEmail = require('../util/sendEmails');
 
 // Helper to get signed JWT token
 const getSignedJwtToken = (id) => {

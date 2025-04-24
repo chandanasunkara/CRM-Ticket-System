@@ -9,7 +9,7 @@ const {
 } = require('../controllers/userController');
 const { protect, authorize } = require('../middleware/auth');
 const advancedResults = require('../middleware/advancedResults');
-const User = require('../models/User');
+const User = require('../models/Users');
 
 // Apply protection to all routes
 router.use(protect);

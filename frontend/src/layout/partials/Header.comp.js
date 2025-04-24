@@ -1,6 +1,7 @@
 import React from 'react';
-import {Navbar,Nav, NavbarBrand} from 'react-bootstrap'
+import {Navbar,Nav} from 'react-bootstrap'
 import logo from '../../assets/img/logo.png'
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   return <Navbar
@@ -15,10 +16,12 @@ const Header = () => {
     <Navbar.Toggle aria-controls='basic-navbar-nav' />
     <Navbar.Collapse id='basic-navbar-nav'>
         <Nav className="ms-auto">
-            <Nav.Link href="/dashboard">Dashboard</Nav.Link>
-            <Nav.Link href="/dashboard">Tickets</Nav.Link>
-            <Nav.Link href="/dashboard">Add New Client</Nav.Link>
-            <Nav.Link href="/dashboard">Logout</Nav.Link>
+        <Link to="/dashboard" className="nav-link">Dashboard</Link>
+
+<Link to="/add-client" className="nav-link">Add Client</Link>
+
+<Link to="/" className="nav-link">Logout</Link>
+
         </Nav>
     </Navbar.Collapse>
   </Navbar>;

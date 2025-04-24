@@ -1,7 +1,7 @@
 const Customer = require('../models/Customer');
 const Ticket = require('../models/Ticket');
-const User = require('../models/User');
-const ErrorResponse = require('../utils/errorResponse');
+const User = require('../models/Users');
+const ErrorResponse = require('../util/errorResponse');
 const asyncHandler = require('../middleware/async');
 
 // @desc    Get all customers

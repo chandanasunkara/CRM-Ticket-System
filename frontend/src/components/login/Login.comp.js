@@ -10,7 +10,7 @@ const LoginForm = ({handleOnchange,handleOnSubmit, formSwitcher, email, password
     <Container>
       <Row className="justify-content-center">
         <Col md={6}>
-          <div className="p-4 shadow rounded bg-white">
+          <div className="login-card">
             <h1 className="text-center">Client Login</h1>
             <hr />
             <Form autoComplete='off' onSubmit={handleOnSubmit}>
@@ -41,7 +41,7 @@ const LoginForm = ({handleOnchange,handleOnSubmit, formSwitcher, email, password
             </Form>
             <hr />
             <div className="text-center">
-              <a href="#!" onClick={() => formSwitcher('reset')}>Forget Password?</a>
+              <a href="#!" onClick={() => formSwitcher('reset')}>Forgot Password?</a>
             </div>
           </div>
         </Col>
