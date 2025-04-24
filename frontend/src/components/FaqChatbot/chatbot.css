@@ -1,12 +1,12 @@
 .chatbot-container {
   position: fixed;
   bottom: 20px;
-  right: 20px; /* ✅ right side */
+  right: 20px;
   z-index: 9999;
 }
 
 .chatbot-toggle {
-  background-color: #28a745; /* ✅ green button */
+  background-color: #28a745;
   color: white;
   border: none;
   border-radius: 50%;
@@ -56,7 +56,7 @@
 
 .msg.bot {
   text-align: left;
-  color: #28a745; /* ✅ readable bot text */
+  color: #28a745;
   margin-bottom: 8px;
 }
 

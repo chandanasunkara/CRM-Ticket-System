@@ -1,9 +1,9 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import tickets from "../../assets/data/dummy-tickets.json"; // Adjust path if needed
+import tickets from "../../assets/data/placeholder-tickets.json";
 
 const TicketConversation = () => {
-  const { tId } = useParams(); // get ticket id from URL
+  const { tId } = useParams();
   const ticket = tickets.find(t => t.id === parseInt(tId));
 
   const containerStyle = {

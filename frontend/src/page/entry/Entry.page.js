@@ -5,19 +5,16 @@ import ResetPassword from '../../components/password-reset/PasswordReset.comp';
 import './entry.style.css';
 
 export const Entry = () => {
-// eslint-disable-next-line no-unused-vars
 const [email, setEmail] = useState('');
 
-// eslint-disable-next-line no-unused-vars
 const [password, setPassword] = useState('');
 
-// eslint-disable-next-line no-unused-vars
 const [frmLoad, setfrmLoad] = useState('login');
  
 
 useEffect(() => {
   const script = document.createElement('script');
-  script.src = './chatbot.js'; // must be inside /public
+  script.src = './chatbot.js';
   script.async = true;
   document.body.appendChild(script);
 
