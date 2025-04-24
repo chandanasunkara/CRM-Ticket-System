@@ -1,5 +1,5 @@
 import React ,{useState, useEffect} from 'react';
-import { Container } from 'react-bootstrap';
+//import { Container } from 'react-bootstrap';
 import LoginForm from '../../components/login/Login.comp';
 import ResetPassword from '../../components/password-reset/PasswordReset.comp';
 import './entry.style.css';
@@ -14,6 +14,7 @@ const [frmLoad, setfrmLoad] = useState('login');
 
 useEffect(() => {
   const script = document.createElement('script');
+
   script.src = './chatbot.js';
   script.async = true;
   document.body.appendChild(script);
@@ -47,7 +48,7 @@ const handleOnchange= e =>{
     if(!email || !password){
         return alert("Fill up the form!");
     }
-    // to call api to submit the form
+    
     console.log(email,password);
   }
 
@@ -58,7 +59,7 @@ const handleOnchange= e =>{
     if(!email ){
         return alert("Please enter the email");
     }
-    // to call api to submit the form
+    
     console.log(email);
   }
 
@@ -66,33 +67,46 @@ const handleOnchange= e =>{
     setfrmLoad(frmType);
   };
 
-  return (
+ return (
+  <div className="entry-page">
+  <div className="left-panel">
+  <img src={require('../../assets/img/network-map.png')} alt="network-map" className="network-image" />
+
+    <h1>Hello CRM! 👋</h1>
+    <p>From Chaos to Clarity — Your Smart CRM for Smarter Customer Journeys..<br />
+    Smarter Conversations. Stronger Relationships. Better Business.</p>
+  </div>
+
+  <div className="right-panel">
+    <div className="login-card">
+      {frmLoad === 'login' && (
+        <LoginForm
+          handleOnchange={handleOnchange}
+          handleOnSubmit={handleOnSubmit}
+          formSwitcher={formSwitcher}
+          email={email}
+          password={password}
+        />
+      )}
+      {frmLoad === 'reset' && (
+        <ResetPassword
+          handleOnchange={handleOnchange}
+          handleOnResetSubmit={handleOnResetSubmit}
+          formSwitcher={formSwitcher}
+          email={email}
+        />
+      )}
+    </div>
+  </div>
+</div>
+
+ 
+);
+
     
-      <div className="entry-page bg-success d-flex justify-content-center align-items-center vh-100">
-        <Container className="d-flex justify-content-center">
-          {frmLoad === 'login' && 
-            <LoginForm 
-              handleOnchange={handleOnchange}
-              handleOnSubmit={handleOnSubmit}
-              formSwitcher={formSwitcher}
-              email={email}
-              password={password}
-            />}
-          {frmLoad === 'reset' &&
-            <ResetPassword 
-              handleOnchange={handleOnchange}
-              handleOnResetSubmit={handleOnResetSubmit}
-              formSwitcher={formSwitcher}
-              email={email}
-            />}
-        </Container>
-    
-        
-      </div>
-    );
+
+  
+  
     
 };
-
-
-
 

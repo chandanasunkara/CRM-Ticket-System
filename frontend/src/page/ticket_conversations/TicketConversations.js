@@ -1,10 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import tickets from "../../assets/data/placeholder-tickets.json";
 
 const TicketConversation = () => {
   const { tId } = useParams();
+
+
   const ticket = tickets.find(t => t.id === parseInt(tId));
+
+  const [replyText, setReplyText] = useState("");
 
   const containerStyle = {
     maxWidth: "800px",
@@ -36,6 +40,15 @@ const TicketConversation = () => {
     padding: "8px",
   };
 
+  const handleReplySubmit = (e) => {
+    e.preventDefault();
+    if (replyText.trim()) {
+      alert("Reply submitted: " + replyText);
+      console.log("Reply submitted:", replyText);
+      setReplyText(""); 
+    }
+  };
+
   if (!ticket) return <div style={containerStyle}>Ticket not found.</div>;
 
   return (
@@ -50,7 +63,7 @@ const TicketConversation = () => {
       <div style={grayBoxStyle}>{ticket.clientName || "Client Name Placeholder"}</div>
 
       <label style={labelStyle}>Created Date</label>
-      <div style={grayBoxStyle}>{ticket.addedAt}</div>
+      <div style={grayBoxStyle}>{ticket.openAt || ticket.addedAt}</div>
 
       <label style={labelStyle}>Service Status</label>
       <div style={grayBoxStyle}>{ticket.status}</div>
@@ -77,6 +90,29 @@ const TicketConversation = () => {
           ))}
         </>
       )}
+
+      <form onSubmit={handleReplySubmit}>
+        <h4 style={{ marginTop: "30px" }}>Write a Reply</h4>
+        <textarea
+          value={replyText}
+          onChange={(e) => setReplyText(e.target.value)}
+          style={{ ...inputStyle, height: "100px" }}
+          placeholder="Type your reply here..."
+        />
+        <button
+          type="submit"
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#198754",
+            color: "#fff",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer"
+          }}
+        >
+          Submit Reply
+        </button>
+      </form>
     </div>
   );
 };

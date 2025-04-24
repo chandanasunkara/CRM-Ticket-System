@@ -45,7 +45,7 @@ export const AddTicketForm = () => {
       subject: !isSubjectValid,
     });
 
-    // Submit logic here (API, log, etc.)
+    
     console.log("Form submitted:", frmData);
   };
 
