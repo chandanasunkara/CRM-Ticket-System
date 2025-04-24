@@ -6,7 +6,7 @@
   }
   
   .left-panel {
-    flex: 0.6; /* 60% */
+    flex: 0.6;
     background: linear-gradient(to bottom right, #37bc6c7e, #22b65d);
     color: white;
     padding: 80px 60px;
@@ -29,13 +29,13 @@
     color: #ffffff;
     font-weight: 700;
     font-size: 2rem;
-    text-shadow: 1px 1px 8px rgba(255, 255, 255, 0.4); /* optional glow */
+    text-shadow: 1px 1px 8px rgba(255, 255, 255, 0.4);
   }
   
   
 
   .right-panel {
-    flex: 0.4; /* 40% */
+    flex: 0.4;
     background-color: #fff;
     display: flex;
     justify-content: center;

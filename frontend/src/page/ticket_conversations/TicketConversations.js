@@ -5,7 +5,6 @@ import tickets from "../../assets/data/placeholder-tickets.json";
 const TicketConversation = () => {
   const { tId } = useParams();
 
-
   const ticket = tickets.find(t => t.id === parseInt(tId));
 
   const [replyText, setReplyText] = useState("");
