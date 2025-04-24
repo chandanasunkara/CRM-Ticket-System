@@ -1,7 +1,6 @@
-import React ,{useState, useEffect} from 'react';
+import React ,{useState} from 'react';
 import LoginForm from '../../components/login/Login.comp';
 import ResetPassword from '../../components/password-reset/PasswordReset.comp';
-// import Chatbot from '../../components/FaqChatbot/chatbot.comp';
 import networkMap from '../../assets/img/network-map.png';
 import './entry.style.css';
 
@@ -63,7 +62,7 @@ export const Entry = () => {
 
 
       <h1>Hello CRM! 👋</h1>
-      <p>From Chaos to Clarity — Your Smart CRM for Smarter Customer Journeys..<br />
+      <p>From Chaos to Clarity — Your Smart CRM for Smarter Customer Journeys.<br />
       Smarter Conversations. Stronger Relationships. Better Business.</p>
     </div>
 
