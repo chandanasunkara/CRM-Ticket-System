@@ -37,14 +37,19 @@ steps:
     args: ['run', 'build']
     dir: 'frontend'
   
-  - name: 'gcr.io/firebase-ci/firebase'
-    args: ['deploy', '--only', 'hosting']
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'firebase'
+      - 'deploy'
+      - '--only'
+      - 'hosting'
+      - '--project'
+      - 'supportsync-39f6b'
     dir: 'frontend'
 
 images:
-  - 'gcr.io/crm-gira/crm-backend'
-
+  - 'gcr.io/supportsync-39f6b/crm-backend'
+  
 options:
   logging: CLOUD_LOGGING_ONLY
-
-
