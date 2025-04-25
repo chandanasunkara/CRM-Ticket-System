@@ -1,6 +1,7 @@
 import React ,{useState} from 'react';
 import LoginForm from '../../components/login/Login.comp';
 import ResetPassword from '../../components/password-reset/PasswordReset.comp';
+import RegisterForm from '../../components/register/Register.comp';
 import networkMap from '../../assets/img/network-map.png';
 import './entry.style.css';
 
@@ -8,6 +9,10 @@ export const Entry = () => {
   const [email, setEmail] = useState('');
 
   const [password, setPassword] = useState('');
+
+  const [name, setName] = useState('');
+
+  const [confirmPassword, setConfirmPassword] = useState('')
 
   const [frmLoad, setfrmLoad] = useState('login');
 
@@ -17,13 +22,18 @@ export const Entry = () => {
     const {name,value} = e.target;
 
     switch(name){
+      case 'name':
+        setName(value);
+        break
       case 'email':
         setEmail(value)
         break
       case 'password':
         setPassword(value)
         break
-
+      case 'confirmPassword':
+        setConfirmPassword(value);
+        break
       default:
         break
     }
@@ -48,6 +58,20 @@ export const Entry = () => {
     }
     
     console.log(email);
+  }
+
+  const handleOnRegisterSubmit = e => {
+    e.preventDefault();
+
+    if (!name || !email || !password || !confirmPassword) {
+      return alert("Please fill in all fields");
+    }
+
+    if (password !== confirmPassword){
+      return alert("Passwords do not match!");
+    }
+
+    console.log({ name, email, password, confirmPassword })
   }
 
   const formSwitcher = frmType =>{
@@ -83,6 +107,17 @@ export const Entry = () => {
             handleOnResetSubmit={handleOnResetSubmit}
             formSwitcher={formSwitcher}
             email={email}
+          />
+        )}
+        {frmLoad === 'register' && (
+          <RegisterForm
+            handleOnchange={handleOnchange}
+            handleOnRegisterSubmit={handleOnRegisterSubmit}
+            formSwitcher={formSwitcher}
+            name={name}
+            email={email}
+            password={password}
+            confirmPassword={confirmPassword}
           />
         )}
       </div>
