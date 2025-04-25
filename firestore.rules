@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isSupportAgent() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'support';
+    }
+    
+    function isTicketOwner(ticketId) {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/tickets/$(ticketId)).data.userId == request.auth.uid;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && request.auth.uid == userId;
+      allow delete: if isAdmin();
+    }
+
+    // Tickets collection
+    match /tickets/{ticketId} {
+      allow read: if isAuthenticated() && (
+        isAdmin() || 
+        isSupportAgent() || 
+        isTicketOwner(ticketId)
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        isAdmin() || 
+        isSupportAgent() || 
+        isTicketOwner(ticketId)
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Comments collection
+    match /tickets/{ticketId}/comments/{commentId} {
+      allow read: if isAuthenticated() && (
+        isAdmin() || 
+        isSupportAgent() || 
+        isTicketOwner(ticketId)
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        isAdmin() || 
+        resource.data.userId == request.auth.uid
+      );
+      allow delete: if isAdmin() || resource.data.userId == request.auth.uid;
+    }
+  }
+} 
