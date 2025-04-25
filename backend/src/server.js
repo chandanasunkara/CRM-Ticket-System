@@ -4,6 +4,9 @@ const cors = require("cors");
 const cookieParser = require('cookie-parser');
 const connectDB = require("./config/db"); // Import the MongoDB connection
 
+const { metricsRoute } = require('./middleware/metrics');
+
+
 // Import routes
 const userRoutes = require('./routes/userRoutes');
 const ticketRoutes = require('./routes/ticketRoutes');
@@ -12,6 +15,9 @@ const authRoutes = require('./routes/authRoutes');
 
 // Initialize Express app
 const app = express();
+
+app.use(metricsRoute)
+
 
 // Middleware
 app.use(express.json());
