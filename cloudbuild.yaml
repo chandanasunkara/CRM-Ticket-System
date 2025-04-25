@@ -1,48 +1,57 @@
 steps:
- # Build the backend Docker image
- - name: 'gcr.io/cloud-builders/docker'
-   args: ['build', '-t', 'gcr.io/crm-gira/crm-backend', './backend']
-  # Push the Docker image
- - name: 'gcr.io/cloud-builders/docker'
-   args: ['push', 'gcr.io/crm-gira/crm-backend']
-  # Deploy to Cloud Run
- - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-   entrypoint: gcloud
-   args:
-     - 'run'
-     - 'deploy'
-     - 'crm-backend'
-     - '--image'
-     - 'gcr.io/crm-gira/crm-backend'
-     - '--region'
-     - 'us-central1'
-     - '--platform'
-     - 'managed'
-     - '--allow-unauthenticated'
-     - '--set-env-vars'
-     - 'MONGODB_URI=mongodb+srv://crm-app-user:Ctf#9RLDb5quazV@crm.0ceweig.mongodb.net/?retryWrites=true&w=majority&appName=CRM,REDIS_HOST=10.79.97.227,REDIS_PORT=6379,JWT_SECRET=7xK9#mP2$vL5nR8@qW3jY6tZ1cF4hB7uN9'
+  # ----------------------------
+  # BACKEND: Build & Deploy to Cloud Run
+  # ----------------------------
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build-backend'
+    args: ['build', '-t', 'gcr.io/crm-gira/crm-backend', './backend']
 
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'push-backend'
+    args: ['push', 'gcr.io/crm-gira/crm-backend']
 
- # Build and deploy frontend
- - name: 'node'
-   entrypoint: npm
-   args: ['install']
-   dir: 'frontend'
-  
-  - name: 'node'
-   entrypoint: npm
-   args: ['run', 'build']
-   dir: 'frontend'
-  
-  - name: 'gcr.io/crm-gira/firebase'
-   args: ['deploy', '--only', 'hosting']
-   dir: 'frontend'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: 'deploy-backend'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'crm-backend'
+      - '--image=gcr.io/crm-gira/crm-backend'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--allow-unauthenticated'
+      - '--set-secrets=MONGODB_URI=MONGODB_URI:latest'
+      - '--set-secrets=REDIS_HOST=REDIS_HOST:latest'
+      - '--set-secrets=REDIS_PORT=REDIS_PORT:latest'
+      - '--set-secrets=JWT_SECRET=JWT_SECRET:latest'
+    # Uncomment if you need env vars (non-secrets):
+    # - '--set-env-vars=ENV=production'
+
+  # ----------------------------
+  # FRONTEND: Build & Deploy to Firebase Hosting
+  # ----------------------------
+  - name: 'gcr.io/cloud-builders/npm'
+    id: 'install-frontend'
+    args: ['install']
+    dir: 'frontend'
+
+  - name: 'gcr.io/cloud-builders/npm'
+    id: 'build-frontend'
+    args: ['run', 'build']
+    dir: 'frontend'
+
+  - name: 'gcr.io/firebase-ci/firebase'
+    id: 'deploy-frontend'
+    args: ['deploy', '--only', 'hosting']
+    dir: 'frontend'
+
+# ----------------------------
+# OPTIONS
+# ----------------------------
+options:
+  logging: CLOUD_LOGGING_ONLY
+  diskSizeGb: 20  # Larger disk for caching
 
 images:
- - 'gcr.io/crm-gira/crm-backend'
-
-
-options:
- logging: CLOUD_LOGGING_ONLY
-
-
+  - 'gcr.io/crm-gira/crm-backend'
