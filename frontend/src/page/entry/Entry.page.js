@@ -1,4 +1,4 @@
-import React ,{useState, useEffect} from 'react';
+import React ,{useState} from 'react';
 import LoginForm from '../../components/login/Login.comp';
 import ResetPassword from '../../components/password-reset/PasswordReset.comp';
 import networkMap from '../../assets/img/network-map.png';
@@ -11,17 +11,6 @@ export const Entry = () => {
 
   const [frmLoad, setfrmLoad] = useState('login');
 
-  useEffect(() => {
-    const script = document.createElement('script');
-
-    script.src = './chatbot.js';
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
 
 
   const handleOnchange= e =>{
@@ -73,7 +62,7 @@ export const Entry = () => {
 
 
       <h1>Hello CRM! 👋</h1>
-      <p>From Chaos to Clarity — Your Smart CRM for Smarter Customer Journeys..<br />
+      <p>From Chaos to Clarity — Your Smart CRM for Smarter Customer Journeys.<br />
       Smarter Conversations. Stronger Relationships. Better Business.</p>
     </div>
 
