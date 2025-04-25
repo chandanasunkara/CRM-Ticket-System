@@ -1,0 +1,48 @@
+steps:
+ # Build the backend Docker image
+ - name: 'gcr.io/cloud-builders/docker'
+   args: ['build', '-t', 'gcr.io/crm-gira/crm-backend', './backend']
+  # Push the Docker image
+ - name: 'gcr.io/cloud-builders/docker'
+   args: ['push', 'gcr.io/crm-gira/crm-backend']
+  # Deploy to Cloud Run
+ - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+   entrypoint: gcloud
+   args:
+     - 'run'
+     - 'deploy'
+     - 'crm-backend'
+     - '--image'
+     - 'gcr.io/crm-gira/crm-backend'
+     - '--region'
+     - 'us-central1'
+     - '--platform'
+     - 'managed'
+     - '--allow-unauthenticated'
+     - '--set-env-vars'
+     - 'MONGODB_URI=mongodb+srv://crm-app-user:Ctf#9RLDb5quazV@crm.0ceweig.mongodb.net/?retryWrites=true&w=majority&appName=CRM,REDIS_HOST=10.79.97.227,REDIS_PORT=6379,JWT_SECRET=7xK9#mP2$vL5nR8@qW3jY6tZ1cF4hB7uN9'
+
+
+ # Build and deploy frontend
+ - name: 'node'
+   entrypoint: npm
+   args: ['install']
+   dir: 'frontend'
+  
+  - name: 'node'
+   entrypoint: npm
+   args: ['run', 'build']
+   dir: 'frontend'
+  
+  - name: 'gcr.io/crm-gira/firebase'
+   args: ['deploy', '--only', 'hosting']
+   dir: 'frontend'
+
+images:
+ - 'gcr.io/crm-gira/crm-backend'
+
+
+options:
+ logging: CLOUD_LOGGING_ONLY
+
+
