@@ -21,6 +21,10 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
+      - '--port'
+      - '5000'
+      - '--set-env-vars'
+      - 'PORT=5000'
       - '--set-secrets'
       - 'MONGODB_URI=MONGODB_URI:latest,REDIS_HOST=REDIS_HOST:latest,REDIS_PORT=REDIS_PORT:latest,JWT_SECRET=JWT_SECRET:latest'
 
