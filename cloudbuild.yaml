@@ -22,11 +22,7 @@ steps:
       - 'managed'
       - '--allow-unauthenticated'
       - '--set-secrets'
-      - |
-        MONGODB_URI=MONGODB_URI:latest,
-        REDIS_HOST=REDIS_HOST:latest,
-        REDIS_PORT=REDIS_PORT:latest,
-        JWT_SECRET=JWT_SECRET:latest
+      - 'MONGODB_URI=MONGODB_URI:latest,REDIS_HOST=REDIS_HOST:latest,REDIS_PORT=REDIS_PORT:latest,JWT_SECRET=JWT_SECRET:latest'
 
   # Build and deploy frontend
   - name: 'gcr.io/cloud-builders/npm'
