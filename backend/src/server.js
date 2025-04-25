@@ -1,23 +1,17 @@
-require("dotenv").config();
+require("dotenv").config(); // Load environment variables
+
 const express = require("express");
 const cors = require("cors");
-const cookieParser = require('cookie-parser');
-const connectDB = require("./config/db"); // Import the MongoDB connection
+const cookieParser = require("cookie-parser");
 
-const { metricsRoute } = require('./middleware/metrics');
-
-
-// Import routes
+// Routes
 const userRoutes = require('./routes/userRoutes');
 const ticketRoutes = require('./routes/ticketRoutes');
 const customerRoutes = require('./routes/customerRoutes');
 const authRoutes = require('./routes/authRoutes');
 
-// Initialize Express app
+// Create Express app
 const app = express();
-
-app.use(metricsRoute)
-
 
 // Middleware
 app.use(express.json());
@@ -27,13 +21,12 @@ app.use(cors({
   credentials: true
 }));
 
-// Connect to MongoDB
-connectDB();
+// Debug MongoDB URI (for dev mode only)
+if (process.env.NODE_ENV !== 'test') {
+  console.log("MONGO_URI:", process.env.MONGO_URI);
+}
 
-// Debug MongoDB connection
-console.log("MONGO_URI:", process.env.MONGO_URI);
-
-// Health check route
+// Routes
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     status: "success",
@@ -42,18 +35,16 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Base route
 app.get("/", (req, res) => {
   res.send("CRM Ticket System API is running!");
 });
 
-// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/customers', customerRoutes);
 
-// Handle 404 errors
+// 404
 app.use((req, res) => {
   res.status(404).json({
     status: "error",
@@ -61,23 +52,18 @@ app.use((req, res) => {
   });
 });
 
-// Global error handler
+// Global Error Handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({
+
+  const statusCode = err.statusCode || 500;
+
+  res.status(statusCode).json({
     status: "error",
     message: err.message || "Something went wrong on the server",
     ...(process.env.NODE_ENV === "development" && { stack: err.stack })
   });
 });
 
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-  console.error('UNHANDLED REJECTION! Shutting down...');
-  console.error(err.name, err.message);
-  process.exit(1);
-});
+module.exports = app; 
