@@ -1,51 +1,52 @@
 steps:
- # Build the backend Docker image
- - name: 'gcr.io/cloud-builders/docker'
-   args: ['build', '-t', 'gcr.io/crm-gira/crm-backend', './backend']
+  # Build the backend Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/crm-gira/crm-backend', './backend']
+  
   # Push the Docker image
- - name: 'gcr.io/cloud-builders/docker'
-   args: ['push', 'gcr.io/crm-gira/crm-backend']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/crm-gira/crm-backend']
+  
   # Deploy to Cloud Run with secrets
- - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-   entrypoint: gcloud
-   args:
-     - 'run'
-     - 'deploy'
-     - 'crm-backend'
-     - '--image'
-     - 'gcr.io/crm-gira/crm-backend'
-     - '--region'
-     - 'us-central1'
-     - '--platform'
-     - 'managed'
-     - '--allow-unauthenticated'
-     - '--set-secrets'
-     - |
-       MONGODB_URI=MONGODB_URI:latest,
-       REDIS_HOST=REDIS_HOST:latest,
-       REDIS_PORT=REDIS_PORT:latest,
-       JWT_SECRET=JWT_SECRET:latest
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'crm-backend'
+      - '--image'
+      - 'gcr.io/crm-gira/crm-backend'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--set-secrets'
+      - |
+        MONGODB_URI=MONGODB_URI:latest,
+        REDIS_HOST=REDIS_HOST:latest,
+        REDIS_PORT=REDIS_PORT:latest,
+        JWT_SECRET=JWT_SECRET:latest
 
-
- # Build and deploy frontend
- - name: 'gcr.io/cloud-builders/npm'
-   entrypoint: npm
-   args: ['install']
-   dir: 'frontend'
+  # Build and deploy frontend
   - name: 'gcr.io/cloud-builders/npm'
-   entrypoint: npm
-   args: ['run', 'build']
-   dir: 'frontend'
+    entrypoint: npm
+    args: ['install']
+    dir: 'frontend'
+  
+  - name: 'gcr.io/cloud-builders/npm'
+    entrypoint: npm
+    args: ['run', 'build']
+    dir: 'frontend'
+  
   - name: 'gcr.io/firebase-ci/firebase'
-   args: ['deploy', '--only', 'hosting']
-   dir: 'frontend'
-
+    args: ['deploy', '--only', 'hosting']
+    dir: 'frontend'
 
 images:
- - 'gcr.io/crm-gira/crm-backend'
-
+  - 'gcr.io/crm-gira/crm-backend'
 
 options:
- logging: CLOUD_LOGGING_ONLY
+  logging: CLOUD_LOGGING_ONLY
 
 
