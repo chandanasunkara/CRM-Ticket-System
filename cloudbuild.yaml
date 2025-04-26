@@ -36,10 +36,19 @@ steps:
     entrypoint: npm
     args: ['run', 'build']
     dir: 'frontend'
-  
- # Deploy to Firebase Hosting using Firebase CLI
-  - name: 'gcr.io/supportsync-39f6b/firebase'
-    args: ['deploy', '--only', 'hosting', '--project', 'supportsync-39f6b']
+    
+    name: 'gcr.io/cloud-builders/npm'
+    args: ['install', '-g', 'firebase-tools']
+    dir: 'frontend'
+
+  - name: 'gcr.io/cloud-builders/npm'
+    entrypoint: firebase
+    args: 
+      - 'deploy'
+      - '--only'
+      - 'hosting'
+      - '--project'
+      - 'supportsync-39f6b'
     dir: 'frontend'
 
 images:
