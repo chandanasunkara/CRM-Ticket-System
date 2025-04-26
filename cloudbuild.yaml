@@ -1,10 +1,10 @@
 steps:
   # Backend Docker build & push
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-central1-docker.pkg.dev/supportsync-39f6b/crm-repo/crm-backend', './backend']
+    args: ['build', '-t', 'gcr.io/supportsync-39f6b/crm-backend', './backend']
   
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/supportsync-39f6b/crm-repo/crm-backend']
+    args: ['push', 'gcr.io/supportsync-39f6b/crm-backend']
   
   # Deploy backend to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -14,7 +14,7 @@ steps:
       - 'deploy'
       - 'crm-backend'
       - '--image'
-      - 'us-central1-docker.pkg.dev/supportsync-39f6b/crm-repo/crm-backend'
+      - 'gcr.io/supportsync-39f6b/crm-backend'
       - '--region'
       - 'us-central1'
       - '--platform'
@@ -56,7 +56,7 @@ steps:
     secretEnv: ['FIREBASE_TOKEN']
 
 images:
-  - 'us-central1-docker.pkg.dev/supportsync-39f6b/crm-repo/crm-backend'
+  - 'gcr.io/supportsync-39f6b/crm-backend'
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -64,4 +64,4 @@ options:
 availableSecrets:
   secretManager:
   - versionName: projects/supportsync-39f6b/secrets/FIREBASE_TOKEN/versions/latest
-    env: 'FIREBASE_TOKEN
+    env: 'FIREBASE_TOKEN'
