@@ -1,12 +1,13 @@
 steps:
-  # Backend Docker build & push
+  # Build the backend Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'us-central1-docker.pkg.dev/supportsync-39f6b/crm-backend/crm-backend', './backend']
+    args: ['build', '-t', 'gcr.io/supportsync-39f6b/crm-backend', './backend']
   
+  # Push the Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-central1-docker.pkg.dev/supportsync-39f6b/crm-backend/crm-backend']
+    args: ['push', 'gcr.io/supportsync-39f6b/crm-backend']
   
-  # Deploy backend to Cloud Run
+  # Deploy to Cloud Run with secrets
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
@@ -14,7 +15,7 @@ steps:
       - 'deploy'
       - 'crm-backend'
       - '--image'
-      - 'us-central1-docker.pkg.dev/supportsync-39f6b/crm-backend/crm-backend'
+      - 'gcr.io/supportsync-39f6b/crm-backend'
       - '--region'
       - 'us-central1'
       - '--platform'
@@ -25,43 +26,26 @@ steps:
       - '--set-secrets'
       - 'MONGODB_URI=MONGODB_URI:latest,REDIS_HOST=REDIS_HOST:latest,REDIS_PORT=REDIS_PORT:latest,JWT_SECRET=JWT_SECRET:latest'
 
-  # Frontend build
-  - name: 'node:20'
+  # Build and deploy frontend
+  - name: 'gcr.io/cloud-builders/npm'
     entrypoint: npm
     args: ['install']
     dir: 'frontend'
   
-  - name: 'node:20'
+  - name: 'gcr.io/cloud-builders/npm'
     entrypoint: npm
     args: ['run', 'build']
     dir: 'frontend'
   
-  # Firebase deploy (original)
-  - name: 'node:20'
-    entrypoint: npm
-    args: ['install', '-g', 'firebase-tools']
+  # Deploy to Firebase Hosting using Firebase CLI
+  - name: 'gcr.io/supportsync-39f6b/firebase'
+    args: ['deploy', '--only', 'hosting', '--project', 'supportsync-39f6b']
     dir: 'frontend'
-
-  - name: 'node:20'
-    entrypoint: firebase
-    args:
-      - 'deploy'
-      - '--only'
-      - 'hosting'
-      - '--project'
-      - 'supportsync-39f6b'
-      - '--token'
-      - '$$FIREBASE_TOKEN'
-    dir: 'frontend'
-    secretEnv: ['FIREBASE_TOKEN']
 
 images:
-  - 'us-central1-docker.pkg.dev/supportsync-39f6b/crm-backend/crm-backend'
+  - 'gcr.io/supportsync-39f6b/crm-backend'
 
 options:
   logging: CLOUD_LOGGING_ONLY
 
-availableSecrets:
-  secretManager:
-  - versionName: projects/supportsync-39f6b/secrets/FIREBASE_TOKEN/versions/latest
-    env: 'FIREBASE_TOKEN'
+
