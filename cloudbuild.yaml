@@ -1,10 +1,10 @@
 steps:
   # Backend Docker build & push
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/supportsync-39f6b/crm-backend', './backend']
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/supportsync-39f6b/crm-backend/crm-backend', './backend']
   
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/supportsync-39f6b/crm-backend']
+    args: ['push', 'us-central1-docker.pkg.dev/supportsync-39f6b/crm-backend/crm-backend']
   
   # Deploy backend to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -14,7 +14,7 @@ steps:
       - 'deploy'
       - 'crm-backend'
       - '--image'
-      - 'gcr.io/supportsync-39f6b/crm-backend'
+      - 'us-central1-docker.pkg.dev/supportsync-39f6b/crm-backend/crm-backend'
       - '--region'
       - 'us-central1'
       - '--platform'
@@ -56,7 +56,7 @@ steps:
     secretEnv: ['FIREBASE_TOKEN']
 
 images:
-  - 'gcr.io/supportsync-39f6b/crm-backend'
+  - 'us-central1-docker.pkg.dev/supportsync-39f6b/crm-backend/crm-backend'
 
 options:
   logging: CLOUD_LOGGING_ONLY
