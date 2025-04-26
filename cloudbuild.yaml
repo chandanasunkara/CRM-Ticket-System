@@ -39,12 +39,9 @@ steps:
   
   # Install Firebase CLI and deploy
   - name: 'gcr.io/cloud-builders/npm'
-    entrypoint: npm
-    args: ['install', '-g', 'firebase-tools']
-  
-  - name: 'gcr.io/cloud-builders/npm'
-    entrypoint: firebase
-    args: ['deploy', '--only', 'hosting', '--project', 'supportsyncv2']
+    entrypoint: npx
+    args: ['firebase', 'deploy', '--only', 'hosting', '--project', 'supportsyncv2', '--token', '$_FIREBASE_TOKEN']
+    secretEnv: ['_FIREBASE_TOKEN']
 
 images:
   - 'gcr.io/crm-gira/crm-backend'
@@ -52,3 +49,7 @@ images:
 options:
   logging: CLOUD_LOGGING_ONLY
 
+availableSecrets:
+  secretManager:
+    - versionName: projects/crm-gira/secrets/FIREBASE_TOKEN/versions/latest
+      env: '_FIREBASE_TOKEN'
