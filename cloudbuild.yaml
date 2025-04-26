@@ -38,13 +38,13 @@ steps:
     dir: 'frontend'
     
     # Install Firebase CLI
-  - name: 'gcr.io/cloud-builders/npm'
+  - name: 'node:20'
     entrypoint: npm
     args: ['install', 'firebase-tools']
     dir: 'frontend'
 
   # Deploy to Firebase Hosting
-  - name: 'gcr.io/cloud-builders/npm'
+  - name: 'node:20'
     entrypoint: npx
     args: ['firebase', 'deploy', '--only', 'hosting', '--project', 'supportsync-39f6b']
     dir: 'frontend'
