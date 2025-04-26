@@ -37,15 +37,9 @@ steps:
     args: ['run', 'build']
     dir: 'frontend'
   
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
-    args:
-      - 'firebase'
-      - 'deploy'
-      - '--only'
-      - 'hosting'
-      - '--project'
-      - 'supportsync-39f6b'
+ # Deploy to Firebase Hosting using Firebase CLI
+  - name: 'gcr.io/$PROJECT_ID/firebase'
+    args: ['deploy', '--only', 'hosting', '--project', 'supportsync-39f6b']
     dir: 'frontend'
 
 images:
