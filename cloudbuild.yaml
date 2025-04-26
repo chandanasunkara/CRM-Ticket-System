@@ -38,7 +38,7 @@ steps:
     dir: 'frontend'
   
  # Deploy to Firebase Hosting using Firebase CLI
-  - name: 'gcr.io/$PROJECT_ID/firebase'
+  - name: 'gcr.io/supportsync-39f6b/firebase'
     args: ['deploy', '--only', 'hosting', '--project', 'supportsync-39f6b']
     dir: 'frontend'
 
