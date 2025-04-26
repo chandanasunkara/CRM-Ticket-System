@@ -1,11 +1,11 @@
 steps:
   # Build the backend Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/supportsync-39f6b/crm-backend', './backend']
+    args: ['build', '-t', 'gcr.io/crm-gira/crm-backend', './backend']
   
   # Push the Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/supportsync-39f6b/crm-backend']
+    args: ['push', 'gcr.io/crm-gira/crm-backend']
   
   # Deploy to Cloud Run with secrets
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -15,7 +15,7 @@ steps:
       - 'deploy'
       - 'crm-backend'
       - '--image'
-      - 'gcr.io/supportsync-39f6b/crm-backend'
+      - 'gcr.io/crm-gira/crm-backend'
       - '--region'
       - 'us-central1'
       - '--platform'
@@ -45,12 +45,13 @@ steps:
   
   - name: 'gcr.io/cloud-builders/npm'
     entrypoint: firebase
-    args: ['deploy', '--only', 'hosting', '--project', 'supportsync-39f6b']
+    args: ['deploy', '--only', 'hosting', '--project', 'supportsyncv2']
     dir: 'frontend'
 
 images:
-  - 'gcr.io/supportsync-39f6b/crm-backend'
+  - 'gcr.io/crm-gira/crm-backend'
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
 
