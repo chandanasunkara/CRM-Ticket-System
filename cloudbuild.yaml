@@ -41,17 +41,14 @@ steps:
   - name: 'gcr.io/cloud-builders/npm'
     entrypoint: npm
     args: ['install', '-g', 'firebase-tools']
-    dir: 'frontend'
   
   - name: 'gcr.io/cloud-builders/npm'
-    entrypoint: sh
-    args: ['-c', 'npx firebase deploy --only hosting --project supportsyncv2']
-    dir: 'frontend'
+    entrypoint: firebase
+    args: ['deploy', '--only', 'hosting', '--project', 'supportsyncv2']
 
 images:
   - 'gcr.io/crm-gira/crm-backend'
 
 options:
   logging: CLOUD_LOGGING_ONLY
-
 
