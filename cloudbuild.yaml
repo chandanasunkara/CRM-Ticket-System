@@ -39,8 +39,10 @@ steps:
   
   # Install Firebase CLI and deploy
   - name: 'gcr.io/cloud-builders/npm'
-    entrypoint: npx
-    args: ['firebase', 'deploy', '--only', 'hosting', '--project', 'supportsyncv2', '--token', '$_FIREBASE_TOKEN']
+    entrypoint: sh
+    args: 
+      - '-c'
+      - 'npx firebase deploy --only hosting --project supportsyncv2 --token "$_FIREBASE_TOKEN"'
     secretEnv: ['_FIREBASE_TOKEN']
 
 images:
