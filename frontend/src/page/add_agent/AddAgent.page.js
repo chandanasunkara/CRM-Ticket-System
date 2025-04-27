@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Form, Button, Alert, Table } from 'react-bootstrap';
 import { PageBreadcrumb } from '../../components/breadcrumb/Breadcrumb.comp';
 import api from '../../config/api';
 
@@ -7,6 +7,23 @@ const AddAgent = () => {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [assignedAgents, setAssignedAgents] = useState([]);
+
+  useEffect(() => {
+    fetchAssignedAgents();
+  }, []);
+
+  const fetchAssignedAgents = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await api.get('/api/users/agents', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAssignedAgents(response.data.data);
+    } catch (error) {
+      console.error('Error fetching assigned agents:', error);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,17 +32,17 @@ const AddAgent = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await api.post('/api/users/agents', {
-        email: email,
-        role: 'agent'
+      await api.post('/api/users/assign-agent', {
+        agentEmail: email
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      setSuccess('Agent invitation sent successfully');
+      setSuccess('Agent assigned successfully');
       setEmail('');
+      fetchAssignedAgents(); // Refresh the list
     } catch (error) {
-      setError(error.response?.data?.message || 'Error sending agent invitation');
+      setError(error.response?.data?.message || 'Error assigning agent');
     }
   };
 
@@ -49,20 +66,43 @@ const AddAgent = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter agent's email address"
                 required
+                placeholder="Enter agent's email address"
               />
-              <Form.Text className="text-muted">
-                An invitation will be sent to this email address
-              </Form.Text>
             </Form.Group>
 
             <Button variant="primary" type="submit">
-              Send Invitation
+              Assign Agent
             </Button>
           </Form>
         </Col>
       </Row>
+
+      {assignedAgents.length > 0 && (
+        <Row className="mt-4">
+          <Col>
+            <h4>Your Assigned Agents</h4>
+            <Table striped hover>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {assignedAgents.map(agent => (
+                  <tr key={agent._id}>
+                    <td>{agent.name}</td>
+                    <td>{agent.email}</td>
+                    <td>Active</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Col>
+        </Row>
+      )}
     </Container>
   );
 };
