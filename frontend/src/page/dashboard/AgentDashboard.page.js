@@ -107,7 +107,7 @@ const AgentDashboard = () => {
         <Col md={8}>
           <Card>
             <Card.Header>
-              <h4>Client List</h4>
+              <h4>Assigned Clients</h4>
             </Card.Header>
             <Card.Body>
               <Table striped hover>
@@ -115,7 +115,6 @@ const AgentDashboard = () => {
                   <tr>
                     <th>Name</th>
                     <th>Email</th>
-                    <th>Company</th>
                     <th>Active Tickets</th>
                     <th>Action</th>
                   </tr>
@@ -129,7 +128,6 @@ const AgentDashboard = () => {
                     >
                       <td>{client.name}</td>
                       <td>{client.email}</td>
-                      <td>{client.company || 'N/A'}</td>
                       <td>
                         <Badge bg="primary">{client.activeTickets || 0}</Badge>
                       </td>
