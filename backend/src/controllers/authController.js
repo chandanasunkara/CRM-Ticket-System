@@ -4,6 +4,7 @@ const User = require('../models/Users');
 const ErrorResponse = require('../util/errorResponse');
 const asyncHandler = require('../middleware/async');
 const sendEmail = require('../util/sendEmails');
+const joi = require('joi');
 
 // Helper to get signed JWT token
 const getSignedJwtToken = (id) => {
@@ -40,10 +41,26 @@ const sendTokenResponse = (user, statusCode, res) => {
     });
 };
 
+
+
+
+const registerSchema = joi.object({
+  name: joi.string().required(),
+  email: joi.string().email().required(),
+  password: joi.string().min(6).required(),
+  role: joi.string().valid('admin', 'agent', 'customer').default('customer'),
+  phone: joi.string().optional(),
+  company: joi.string().optional()
+});
+
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
 exports.register = asyncHandler(async (req, res, next) => {
+  const { error } = registerSchema.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 400));
+  }
   const { name, email, password, role, phone, company } = req.body;
 
   // Create user
@@ -63,10 +80,21 @@ exports.register = asyncHandler(async (req, res, next) => {
   sendTokenResponse(user, 201, res);
 });
 
+
+
+const loginSchema = joi.object({
+  email: joi.string().email().required(),
+  password: joi.string().min(6).required()
+});
+
 // @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
 exports.login = asyncHandler(async (req, res, next) => {
+  const { error } = loginSchema.validate(req.body);
+  if (error) {
+    return next(new ErrorResponse(error.details[0].message, 400));
+  }
   const { email, password } = req.body;
 
   // Validate email & password
