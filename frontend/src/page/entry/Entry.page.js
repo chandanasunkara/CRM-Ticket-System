@@ -15,6 +15,7 @@ export const Entry = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [company, setCompany] = useState('');
+  const [role, setRole] = useState('customer');
   const [frmLoad, setfrmLoad] = useState('login');
 
   const handleOnchange = e => {
@@ -37,6 +38,9 @@ export const Entry = () => {
         break;
       case 'company':
         setCompany(value);
+        break;
+      case 'role':
+        setRole(value);
         break;
       default:
         break;
@@ -97,7 +101,8 @@ export const Entry = () => {
         email, 
         password,
         phone,
-        company
+        company,
+        role
       });
       console.log('Registration successful:', response.data);
       alert('Registration successful! Please login.');
@@ -151,6 +156,7 @@ export const Entry = () => {
               confirmPassword={confirmPassword}
               phone={phone}
               company={company}
+              role={role}
             />
           )}
         </div>

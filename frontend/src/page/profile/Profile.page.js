@@ -20,13 +20,13 @@ const Profile = () => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await api.get('/api/users/me', {
+        const response = await api.get('/api/auth/me', {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
 
-        const userData = response.data;
+        const userData = response.data.data;
         setUser(userData);
         setFormData({
           name: userData.name || '',
@@ -58,16 +58,30 @@ const Profile = () => {
       const token = localStorage.getItem('token');
       if (!token) return;
 
-      const response = await api.put('/api/users/me', formData, {
+      const response = await api.put('/api/auth/me', formData, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
 
-      setUser(response.data);
+      // Update the user state with the new data
+      const updatedUser = response.data.data;
+      setUser(updatedUser);
+      
+      // Update the user in localStorage
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem('user', JSON.stringify({
+        ...currentUser,
+        name: updatedUser.name,
+        phone: updatedUser.phone,
+        company: updatedUser.company
+      }));
+
       setEditMode(false);
+      alert('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating profile:', error);
+      alert('Failed to update profile. Please try again.');
     }
   };
 
@@ -109,6 +123,7 @@ const Profile = () => {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
+                      required
                     />
                   </Form.Group>
 

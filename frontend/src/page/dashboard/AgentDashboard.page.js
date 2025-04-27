@@ -1,197 +1,184 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Container, Row, Col, Button, Pagination, Badge } from "react-bootstrap";
-import { TicketTable } from "../../components/ticket-table/TicketTable.comp";
-import Chart from 'chart.js/auto';
-import { PageBreadcrumb } from "../../components/breadcrumb/Breadcrumb.comp";
-import { Link } from "react-router-dom";
-import api from "../../config/api";
+import React, { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Table, Button, Badge } from 'react-bootstrap';
+import { PageBreadcrumb } from '../../components/breadcrumb/Breadcrumb.comp';
+import api from '../../config/api';
+import { TicketTable } from '../../components/ticket-table/TicketTable.comp';
+import { PieChart } from '../../components/pie-chart/PieChart.comp';
 
 const AgentDashboard = () => {
-  const chartRef1 = useRef(null);
-  const chartRef2 = useRef(null);
-  const chartInstanceRef1 = useRef(null);
-  const chartInstanceRef2 = useRef(null);
-  const [tickets, setTickets] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [clientTickets, setClientTickets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const ticketsPerPage = 10;
+  const [stats, setStats] = useState({
+    total: 0,
+    pending: 0,
+    open: 0,
+    closed: 0
+  });
 
-  const fetchTickets = async () => {
+  useEffect(() => {
+    fetchClients();
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    if (selectedClient) {
+      fetchClientTickets(selectedClient._id);
+    }
+  }, [selectedClient]);
+
+  const fetchClients = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) return;
-
-      const response = await api.get('/api/tickets', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+      const response = await api.get('/api/users/clients', {
+        headers: { Authorization: `Bearer ${token}` }
       });
-
-      let ticketsData = [];
-      if (Array.isArray(response.data)) {
-        ticketsData = response.data;
-      } else if (response.data && Array.isArray(response.data.tickets)) {
-        ticketsData = response.data.tickets;
-      } else if (response.data && response.data.data) {
-        ticketsData = Array.isArray(response.data.data) ? response.data.data : [];
-      }
-
-      setTickets(ticketsData);
-      
-      // Update chart data based on real tickets
-      const assignedTickets = ticketsData.filter(ticket => ticket.assignedTo).length;
-      const unassignedTickets = ticketsData.filter(ticket => !ticket.assignedTo).length;
-      const totalTickets = assignedTickets + unassignedTickets;
-
-      const openTickets = ticketsData.filter(ticket => ticket.status === 'open').length;
-      const closedTickets = ticketsData.filter(ticket => ticket.status === 'closed').length;
-      const totalStatusTickets = openTickets + closedTickets;
-
-      // Update charts
-      if (chartInstanceRef1.current) chartInstanceRef1.current.destroy();
-      if (chartInstanceRef2.current) chartInstanceRef2.current.destroy();
-
-      const ctx1 = chartRef1.current.getContext('2d');
-      const ctx2 = chartRef2.current.getContext('2d');
-
-      chartInstanceRef1.current = new Chart(ctx1, {
-        type: 'pie',
-        data: {
-          labels: ['Assigned', 'Unassigned'],
-          datasets: [{
-            data: [assignedTickets, unassignedTickets],
-            backgroundColor: ['#4CAF50', '#FF9800']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'bottom' },
-            title: { display: true, text: 'Ticket Assignment' }
-          }
-        }
-      });
-
-      chartInstanceRef2.current = new Chart(ctx2, {
-        type: 'pie',
-        data: {
-          labels: ['Open', 'Closed'],
-          datasets: [{
-            data: [openTickets, closedTickets],
-            backgroundColor: ['#2196F3', '#9E9E9E']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'bottom' },
-            title: { display: true, text: 'Ticket Status' }
-          }
-        }
-      });
+      setClients(response.data.data);
     } catch (error) {
-      console.error('Error fetching tickets:', error);
-      setTickets([]);
+      console.error('Error fetching clients:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchTickets();
-  }, [refreshKey]);
-
-  const handleRefresh = () => {
-    setLoading(true);
-    setRefreshKey(prev => prev + 1);
+  const fetchClientTickets = async (clientId) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await api.get(`/api/tickets/client/${clientId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setClientTickets(response.data.data);
+    } catch (error) {
+      console.error('Error fetching client tickets:', error);
+    }
   };
 
-  // Calculate pagination
-  const indexOfLastTicket = currentPage * ticketsPerPage;
-  const indexOfFirstTicket = indexOfLastTicket - ticketsPerPage;
-  const currentTickets = tickets.slice(indexOfFirstTicket, indexOfLastTicket);
-  const totalPages = Math.ceil(tickets.length / ticketsPerPage);
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await api.get('/api/tickets/stats', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setStats(response.data.data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const handleResolveTicket = async (ticketId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await api.put(`/api/tickets/${ticketId}/resolve`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (selectedClient) {
+        fetchClientTickets(selectedClient._id);
+      }
+      fetchStats();
+    } catch (error) {
+      console.error('Error resolving ticket:', error);
+    }
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Container>
-      <Row className="breadcrumbs mt-3">
+      <Row className="mt-3">
         <Col>
           <PageBreadcrumb page="Agent Dashboard" />
         </Col>
-        <Col className="text-end">
-          <Button 
-            variant="outline-primary" 
-            onClick={handleRefresh}
-            disabled={loading}
-          >
-            {loading ? 'Refreshing...' : 'Refresh Tickets'}
-          </Button>
+      </Row>
+
+      <Row className="mt-4">
+        <Col md={4}>
+          <Card>
+            <Card.Header>
+              <h4>Ticket Statistics</h4>
+            </Card.Header>
+            <Card.Body>
+              <PieChart stats={stats} />
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={8}>
+          <Card>
+            <Card.Header>
+              <h4>Client List</h4>
+            </Card.Header>
+            <Card.Body>
+              <Table striped hover>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Company</th>
+                    <th>Active Tickets</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clients.map(client => (
+                    <tr 
+                      key={client._id}
+                      onClick={() => setSelectedClient(client)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <td>{client.name}</td>
+                      <td>{client.email}</td>
+                      <td>{client.company || 'N/A'}</td>
+                      <td>
+                        <Badge bg="primary">{client.activeTickets || 0}</Badge>
+                      </td>
+                      <td>
+                        <Button 
+                          variant="primary" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedClient(client);
+                          }}
+                        >
+                          View Tickets
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </Card.Body>
+          </Card>
         </Col>
       </Row>
 
-      <Row className="charts-row mt-4 text-center">
-        <Col md={6}>
-          <div>Total Tickets: {tickets.length}</div>
-          <div style={{ width: '300px', height: '300px', margin: '0 auto' }}>
-            <canvas ref={chartRef1}></canvas>
-          </div>
-        </Col>
-
-        <Col md={6}>
-          <div>Total Status: {tickets.length}</div>
-          <div style={{ width: '300px', height: '300px', margin: '0 auto' }}>
-            <canvas ref={chartRef2}></canvas>
-          </div>
-        </Col>
-      </Row>
-
-      <Row>
-        <Col className="mt-2" style={{ fontSize: '1.2rem', fontWeight: '500' }}>
-          Ticket Queue
-        </Col>
-      </Row>
-      <hr />
-      <Row>
-        <Col className="recent-ticket" style={{ fontSize: '1.1rem' }}>
-          {loading ? (
-            <div className="text-center">Loading tickets...</div>
-          ) : tickets.length === 0 ? (
-            <div className="text-center">No tickets found</div>
-          ) : (
-            <>
-              <TicketTable tickets={currentTickets} />
-              {totalPages > 1 && (
-                <div className="d-flex justify-content-center mt-3">
-                  <Pagination>
-                    <Pagination.Prev 
-                      onClick={() => paginate(currentPage - 1)} 
-                      disabled={currentPage === 1}
-                    />
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
-                      <Pagination.Item
-                        key={number}
-                        active={number === currentPage}
-                        onClick={() => paginate(number)}
-                      >
-                        {number}
-                      </Pagination.Item>
-                    ))}
-                    <Pagination.Next 
-                      onClick={() => paginate(currentPage + 1)} 
-                      disabled={currentPage === totalPages}
-                    />
-                  </Pagination>
-                </div>
-              )}
-            </>
-          )}
-        </Col>
-      </Row>
+      {selectedClient && (
+        <Row className="mt-4">
+          <Col>
+            <Card>
+              <Card.Header className="d-flex justify-content-between align-items-center">
+                <h4>Tickets for {selectedClient.name}</h4>
+                <Button 
+                  variant="secondary" 
+                  size="sm"
+                  onClick={() => setSelectedClient(null)}
+                >
+                  Back to Clients
+                </Button>
+              </Card.Header>
+              <Card.Body>
+                <TicketTable 
+                  tickets={clientTickets}
+                  onResolve={handleResolveTicket}
+                  showResolveButton={true}
+                />
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      )}
     </Container>
   );
 };
