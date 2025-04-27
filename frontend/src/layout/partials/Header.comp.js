@@ -24,7 +24,14 @@ const Header = () => {
             Role: {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
           </div>
           <Link to="/dashboard" className="nav-link">Dashboard</Link>
-          <Link to="/add-client" className="nav-link">Add Client</Link>
+          {userRole === 'customer' ? (
+            <Link to="/add-agent" className="nav-link">Add Agent</Link>
+          ) : (
+            <>
+              <Link to="/add-client" className="nav-link">Add Client</Link>
+              <Link to="/invitations" className="nav-link">Invitations</Link>
+            </>
+          )}
           <Link to="/profile" className="nav-link">Profile</Link>
           <Link to="/" className="nav-link">Logout</Link>
         </Nav>

@@ -11,6 +11,8 @@ import AddNewClientForm  from './page/add_new_client_form/AddNewClientForm';
 import TicketConversations from './page/ticket_conversations/TicketConversations';
 import {AddTicket} from "./page/new-ticket/AddTicket.page";
 import Profile from './page/profile/Profile.page';
+import AddAgent from './page/add_agent/AddAgent.page';
+import Invitations from './page/invitations/Invitations.page';
 
 function App() {
   return (
@@ -47,6 +49,22 @@ function App() {
           element={
             <PrivateRoute>
               <AddNewClientForm />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/add-agent"
+          element={
+            <PrivateRoute>
+              <AddAgent />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/invitations"
+          element={
+            <PrivateRoute>
+              <Invitations />
             </PrivateRoute>
           }
         />
