@@ -1,119 +1,168 @@
-import React, { useState } from "react";
-import { useParams } from "react-router-dom";
-import tickets from "../../assets/data/placeholder-tickets.json";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Container, Row, Col, Button, Form, Alert } from "react-bootstrap";
+import api from "../../config/api";
 
-const TicketConversation = () => {
+const TicketConversations = () => {
   const { tId } = useParams();
-
-  const ticket = tickets.find(t => t.id === parseInt(tId));
-
+  const navigate = useNavigate();
+  const [ticket, setTicket] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [replyText, setReplyText] = useState("");
 
-  const containerStyle = {
-    maxWidth: "800px",
-    margin: "20px auto",
-    padding: "20px",
-    fontFamily: "Arial, sans-serif",
-  };
+  useEffect(() => {
+    const fetchTicket = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError('Please login to view ticket details');
+          return;
+        }
 
-  const labelStyle = {
-    fontWeight: "bold",
-    marginBottom: "5px",
-    display: "block",
-  };
+        const response = await api.get(`/api/tickets/${tId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
 
-  const inputStyle = {
-    width: "100%",
-    padding: "8px",
-    marginBottom: "10px",
-    border: "1px solid #ccc",
-    borderRadius: "4px",
-  };
+        if (response.data && response.data.data) {
+          setTicket(response.data.data);
+        } else {
+          setError('Invalid ticket data received');
+        }
+      } catch (error) {
+        console.error('Error fetching ticket:', error);
+        setError('Failed to load ticket details');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const grayBoxStyle = {
-    width: "100%",
-    height: "40px",
-    backgroundColor: "#ddd",
-    marginBottom: "10px",
-    borderRadius: "4px",
-    padding: "8px",
-  };
+    fetchTicket();
+  }, [tId]);
 
-  const handleReplySubmit = (e) => {
+  const handleReplySubmit = async (e) => {
     e.preventDefault();
-    if (replyText.trim()) {
-      alert("Reply submitted: " + replyText);
-      console.log("Reply submitted:", replyText);
-      setReplyText(""); 
+    if (!replyText.trim()) return;
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Please login to submit a reply');
+        return;
+      }
+
+      const response = await api.post(`/api/tickets/${tId}/reply`, 
+        { message: replyText },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.data && response.data.data) {
+        setTicket(response.data.data);
+        setReplyText("");
+      }
+    } catch (error) {
+      console.error('Error submitting reply:', error);
+      setError('Failed to submit reply');
     }
   };
 
-  if (!ticket) return <div style={containerStyle}>Ticket not found.</div>;
+  if (loading) {
+    return (
+      <Container className="text-center mt-5">
+        <div>Loading ticket details...</div>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container className="text-center mt-5">
+        <Alert variant="danger">{error}</Alert>
+        <Button variant="primary" onClick={() => navigate('/dashboard')}>
+          Back to Dashboard
+        </Button>
+      </Container>
+    );
+  }
+
+  if (!ticket) {
+    return (
+      <Container className="text-center mt-5">
+        <Alert variant="warning">Ticket not found</Alert>
+        <Button variant="primary" onClick={() => navigate('/dashboard')}>
+          Back to Dashboard
+        </Button>
+      </Container>
+    );
+  }
 
   return (
-    <div style={containerStyle}>
-      <h3>Ticket Conversation</h3>
+    <Container>
+      <Row className="mt-3">
+        <Col>
+          <h2>Ticket Details</h2>
+          <hr />
+        </Col>
+      </Row>
 
-      <h4>Ticket Info</h4>
-      <label style={labelStyle}>ID</label>
-      <div style={grayBoxStyle}>{ticket.id}</div>
+      <Row>
+        <Col>
+          <h4>Subject: {ticket.subject}</h4>
+          <p><strong>Status:</strong> {ticket.status}</p>
+          <p><strong>Priority:</strong> {ticket.priority}</p>
+          <p><strong>Category:</strong> {ticket.category}</p>
+          <p><strong>Created:</strong> {new Date(ticket.createdAt).toLocaleString()}</p>
+        </Col>
+      </Row>
 
-      <label style={labelStyle}>Client Name</label>
-      <div style={grayBoxStyle}>{ticket.clientName || "Client Name Placeholder"}</div>
+      <Row className="mt-4">
+        <Col>
+          <h4>Description</h4>
+          <p>{ticket.description}</p>
+        </Col>
+      </Row>
 
-      <label style={labelStyle}>Created Date</label>
-      <div style={grayBoxStyle}>{ticket.openAt || ticket.addedAt}</div>
-
-      <label style={labelStyle}>Service Status</label>
-      <div style={grayBoxStyle}>{ticket.status}</div>
-
-      <label style={labelStyle}>Issue Subject</label>
-      <input type="text" value={ticket.subject} style={inputStyle} readOnly />
-
-      <label style={labelStyle}>Description</label>
-      <input type="text" value={ticket.description || "Description not available"} style={inputStyle} readOnly />
-
-      <h4>Provided Solution</h4>
-      <textarea style={{ ...inputStyle, height: "100px" }} readOnly value={ticket.solution || "Solution pending..."} />
-
-      {ticket.history && (
-        <>
-          <h4 style={{ marginTop: "30px" }}>Conversation History</h4>
-          {ticket.history.map((msg, idx) => (
-            <div key={idx} style={{ marginBottom: "15px" }}>
-              <p style={{ margin: 0 }}>
-                <strong>{msg.messageBy} ({msg.date}):</strong>
-              </p>
-              <p style={{ margin: "5px 0" }}>{msg.message}</p>
-            </div>
-          ))}
-        </>
+      {ticket.comments && ticket.comments.length > 0 && (
+        <Row className="mt-4">
+          <Col>
+            <h4>Conversation History</h4>
+            {ticket.comments.map((comment, index) => (
+              <div key={index} className="mb-3 p-3 border rounded">
+                <p><strong>{comment.user?.name || 'Unknown User'}:</strong> {comment.text}</p>
+                <small className="text-muted">{new Date(comment.createdAt).toLocaleString()}</small>
+              </div>
+            ))}
+          </Col>
+        </Row>
       )}
 
-      <form onSubmit={handleReplySubmit}>
-        <h4 style={{ marginTop: "30px" }}>Write a Reply</h4>
-        <textarea
-          value={replyText}
-          onChange={(e) => setReplyText(e.target.value)}
-          style={{ ...inputStyle, height: "100px" }}
-          placeholder="Type your reply here..."
-        />
-        <button
-          type="submit"
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#198754",
-            color: "#fff",
-            border: "none",
-            borderRadius: "5px",
-            cursor: "pointer"
-          }}
-        >
-          Submit Reply
-        </button>
-      </form>
-    </div>
+      <Row className="mt-4">
+        <Col>
+          <h4>Add Reply</h4>
+          <Form onSubmit={handleReplySubmit}>
+            <Form.Group className="mb-3">
+              <Form.Control
+                as="textarea"
+                rows={3}
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Type your reply here..."
+              />
+            </Form.Group>
+            <Button variant="success" type="submit">
+              Submit Reply
+            </Button>
+          </Form>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 
-export default TicketConversation;
+export default TicketConversations;

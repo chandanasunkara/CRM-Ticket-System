@@ -2,10 +2,9 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 import DefaultLayout from "../../layout/DefaultLayout";
 
-const isAuth = true;
-
 const PrivateRoute = ({ children }) => {
-  return isAuth ? <DefaultLayout>{children}</DefaultLayout> : <Navigate to="/" replace />;
+  const token = localStorage.getItem('token');
+  return token ? <DefaultLayout>{children}</DefaultLayout> : <Navigate to="/" replace />;
 };
 
 export default PrivateRoute;

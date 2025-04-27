@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Container, Row, Col, Button, Pagination } from "react-bootstrap";
+import { Container, Row, Col, Button, Pagination, Badge } from "react-bootstrap";
 import { TicketTable } from "../../components/ticket-table/TicketTable.comp";
 import Chart from 'chart.js/auto';
 import { PageBreadcrumb } from "../../components/breadcrumb/Breadcrumb.comp";
 import { Link } from "react-router-dom";
 import api from "../../config/api";
-import AgentDashboard from "./AgentDashboard.page";
 
-const Dashboard = () => {
-  // Initialize all hooks at the top level
+const AgentDashboard = () => {
   const chartRef1 = useRef(null);
   const chartRef2 = useRef(null);
   const chartInstanceRef1 = useRef(null);
@@ -18,10 +16,6 @@ const Dashboard = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const ticketsPerPage = 10;
-
-  // Get user role from localStorage
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const userRole = user.role || 'customer';
 
   const fetchTickets = async () => {
     try {
@@ -34,10 +28,6 @@ const Dashboard = () => {
         }
       });
 
-      // Log the response to see its structure
-      console.log('API Response:', response);
-
-      // Handle different possible response structures
       let ticketsData = [];
       if (Array.isArray(response.data)) {
         ticketsData = response.data;
@@ -47,17 +37,16 @@ const Dashboard = () => {
         ticketsData = Array.isArray(response.data.data) ? response.data.data : [];
       }
 
-      console.log('Processed tickets:', ticketsData);
       setTickets(ticketsData);
       
       // Update chart data based on real tickets
-      const completedTickets = ticketsData.filter(ticket => ticket.status === 'closed').length;
-      const pendingTickets = ticketsData.filter(ticket => ticket.status !== 'closed').length;
-      const totalTickets = completedTickets + pendingTickets;
+      const assignedTickets = ticketsData.filter(ticket => ticket.assignedTo).length;
+      const unassignedTickets = ticketsData.filter(ticket => !ticket.assignedTo).length;
+      const totalTickets = assignedTickets + unassignedTickets;
 
-      const activeTickets = ticketsData.filter(ticket => ticket.status === 'open').length;
-      const inactiveTickets = ticketsData.filter(ticket => ticket.status !== 'open').length;
-      const totalStatusTickets = activeTickets + inactiveTickets;
+      const openTickets = ticketsData.filter(ticket => ticket.status === 'open').length;
+      const closedTickets = ticketsData.filter(ticket => ticket.status === 'closed').length;
+      const totalStatusTickets = openTickets + closedTickets;
 
       // Update charts
       if (chartInstanceRef1.current) chartInstanceRef1.current.destroy();
@@ -69,10 +58,29 @@ const Dashboard = () => {
       chartInstanceRef1.current = new Chart(ctx1, {
         type: 'pie',
         data: {
-          labels: ['Completed', 'Pending'],
+          labels: ['Assigned', 'Unassigned'],
           datasets: [{
-            data: [completedTickets, pendingTickets],
+            data: [assignedTickets, unassignedTickets],
             backgroundColor: ['#4CAF50', '#FF9800']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' },
+            title: { display: true, text: 'Ticket Assignment' }
+          }
+        }
+      });
+
+      chartInstanceRef2.current = new Chart(ctx2, {
+        type: 'pie',
+        data: {
+          labels: ['Open', 'Closed'],
+          datasets: [{
+            data: [openTickets, closedTickets],
+            backgroundColor: ['#2196F3', '#9E9E9E']
           }]
         },
         options: {
@@ -84,42 +92,17 @@ const Dashboard = () => {
           }
         }
       });
-
-      chartInstanceRef2.current = new Chart(ctx2, {
-        type: 'pie',
-        data: {
-          labels: ['Active', 'Inactive'],
-          datasets: [{
-            data: [activeTickets, inactiveTickets],
-            backgroundColor: ['#2196F3', '#9E9E9E']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'bottom' },
-            title: { display: true, text: 'Activity Status' }
-          }
-        }
-      });
     } catch (error) {
       console.error('Error fetching tickets:', error);
-      setTickets([]); // Set empty array on error
+      setTickets([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Move useEffect to the top level
   useEffect(() => {
     fetchTickets();
   }, [refreshKey]);
-
-  // If user is an agent, render the AgentDashboard
-  if (userRole === 'agent') {
-    return <AgentDashboard />;
-  }
 
   const handleRefresh = () => {
     setLoading(true);
@@ -132,20 +115,13 @@ const Dashboard = () => {
   const currentTickets = tickets.slice(indexOfFirstTicket, indexOfLastTicket);
   const totalPages = Math.ceil(tickets.length / ticketsPerPage);
 
-  // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-  // Generate page numbers for pagination
-  const pageNumbers = [];
-  for (let i = 1; i <= totalPages; i++) {
-    pageNumbers.push(i);
-  }
 
   return (
     <Container>
       <Row className="breadcrumbs mt-3">
         <Col>
-          <PageBreadcrumb page="Dashboard" />
+          <PageBreadcrumb page="Agent Dashboard" />
         </Col>
         <Col className="text-end">
           <Button 
@@ -174,22 +150,9 @@ const Dashboard = () => {
         </Col>
       </Row>
 
-      <Row className="buttons text-center my-4">
-        <Col>
-          <Link to="/add-ticket">
-            <Button
-              variant="success"
-              style={{ fontSize: "1.5rem", padding: "10px 30px" }}
-            >
-              Add New Ticket
-            </Button>
-          </Link>
-        </Col>
-      </Row>
-
       <Row>
         <Col className="mt-2" style={{ fontSize: '1.2rem', fontWeight: '500' }}>
-          Recently Added tickets
+          Ticket Queue
         </Col>
       </Row>
       <hr />
@@ -209,7 +172,7 @@ const Dashboard = () => {
                       onClick={() => paginate(currentPage - 1)} 
                       disabled={currentPage === 1}
                     />
-                    {pageNumbers.map(number => (
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(number => (
                       <Pagination.Item
                         key={number}
                         active={number === currentPage}
@@ -233,4 +196,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default AgentDashboard; 
