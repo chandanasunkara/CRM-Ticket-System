@@ -7,7 +7,9 @@ const {
   updateUser, 
   deleteUser,
   assignAgent,
-  getAssignedAgents
+  getAssignedAgents,
+  handleInvitation,
+  getAgentInvitations
 } = require('../controllers/userController');
 const { protect, authorize } = require('../middleware/auth');
 const advancedResults = require('../middleware/advancedResults');
@@ -19,6 +21,10 @@ router.use(protect);
 // Agent assignment routes - these should be accessible to customers
 router.post('/assign-agent', assignAgent);
 router.get('/agents', getAssignedAgents);
+
+// Invitation routes
+router.post('/invitations/handle', handleInvitation);
+router.get('/invitations', getAgentInvitations);
 
 // Routes that only admins can access
 router.route('/')
