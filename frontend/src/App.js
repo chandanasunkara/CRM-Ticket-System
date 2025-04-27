@@ -10,6 +10,7 @@ import Dashboard  from './page/dashboard/Dashboard.page';
 import AddNewClientForm  from './page/add_new_client_form/AddNewClientForm';
 import TicketConversations from './page/ticket_conversations/TicketConversations';
 import {AddTicket} from "./page/new-ticket/AddTicket.page";
+import Profile from './page/profile/Profile.page';
 
 function App() {
   return (
@@ -49,7 +50,14 @@ function App() {
             </PrivateRoute>
           }
         />
-
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
   </Routes>
 </Router>
 

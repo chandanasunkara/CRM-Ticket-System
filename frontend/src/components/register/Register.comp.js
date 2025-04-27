@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
 
 
-const RegisterForm = ({handleOnchange,handleOnRegisterSubmit, formSwitcher, name, email, password, confirmPassword }) => {
+const RegisterForm = ({handleOnchange,handleOnRegisterSubmit, formSwitcher, name, email, password, confirmPassword, phone, company }) => {
     return (
       <Container>
         <Row className="justify-content-center">
@@ -33,6 +33,37 @@ const RegisterForm = ({handleOnchange,handleOnRegisterSubmit, formSwitcher, name
                     placeholder="Enter Email"
                     required
                   />
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Phone</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    name="phone"
+                    value={phone}
+                    onChange = {handleOnchange}
+                    placeholder="Enter Phone Number"
+                  />
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Company</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="company"
+                    value={company}
+                    onChange = {handleOnchange}
+                    placeholder="Enter Company Name"
+                  />
+                </Form.Group>
+                <Form.Group>
+                  <Form.Label>Role</Form.Label>
+                  <Form.Select
+                    name="role"
+                    onChange={handleOnchange}
+                    required
+                  >
+                    <option value="customer">Client</option>
+                    <option value="agent">Agent</option>
+                  </Form.Select>
                 </Form.Group>
                 <Form.Group>
                   <Form.Label>Password</Form.Label>
@@ -80,5 +111,7 @@ const RegisterForm = ({handleOnchange,handleOnRegisterSubmit, formSwitcher, name
       name: PropTypes.string.isRequired,
       email: PropTypes.string.isRequired,
       password: PropTypes.string.isRequired,
-      confirmPassword: PropTypes.string.isRequired
+      confirmPassword: PropTypes.string.isRequired,
+      phone: PropTypes.string,
+      company: PropTypes.string
   }
