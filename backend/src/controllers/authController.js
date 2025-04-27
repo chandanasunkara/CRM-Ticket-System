@@ -44,14 +44,16 @@ const sendTokenResponse = (user, statusCode, res) => {
 // @route   POST /api/auth/register
 // @access  Public
 exports.register = asyncHandler(async (req, res, next) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, phone, company } = req.body;
 
   // Create user
   const user = await User.create({
     name,
     email,
     password,
-    role: role || 'customer'
+    role: role || 'customer',
+    phone: phone || '',
+    company: company || ''
   });
 
   // Update last login
@@ -197,4 +199,25 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
   await user.save();
 
   sendTokenResponse(user, 200, res);
+});
+
+// @desc    Update user profile
+// @route   PUT /api/auth/me
+// @access  Private
+exports.updateProfile = asyncHandler(async (req, res, next) => {
+  const fieldsToUpdate = {
+    name: req.body.name,
+    phone: req.body.phone,
+    company: req.body.company
+  };
+
+  const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+    new: true,
+    runValidators: true
+  });
+
+  res.status(200).json({
+    success: true,
+    data: user
+  });
 }); 

@@ -30,6 +30,14 @@ const UserSchema = new mongoose.Schema({
     enum: ['sales', 'support', 'billing', 'technical'],
     default: 'support'
   },
+  phone: {
+    type: String,
+    trim: true
+  },
+  company: {
+    type: String,
+    trim: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
