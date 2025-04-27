@@ -85,4 +85,52 @@ exports.deleteUser = asyncHandler(async (req, res, next) => {
     success: true,
     data: {}
   });
+});
+
+// @desc    Assign agent to client
+// @route   POST /api/users/assign-agent
+// @access  Private
+exports.assignAgent = asyncHandler(async (req, res, next) => {
+  const { agentEmail } = req.body;
+  const clientId = req.user.id;
+
+  // Find the agent by email
+  const agent = await User.findOne({ email: agentEmail, role: 'agent' });
+  if (!agent) {
+    return next(new ErrorResponse('Agent not found', 404));
+  }
+
+  // Find the client
+  const client = await User.findById(clientId);
+  if (!client) {
+    return next(new ErrorResponse('Client not found', 404));
+  }
+
+  // Add the agent to the client's assignedAgents array if not already there
+  if (!client.assignedAgents.includes(agent._id)) {
+    client.assignedAgents.push(agent._id);
+    await client.save();
+  }
+
+  res.status(200).json({
+    success: true,
+    data: agent
+  });
+});
+
+// @desc    Get client's assigned agents
+// @route   GET /api/users/agents
+// @access  Private
+exports.getAssignedAgents = asyncHandler(async (req, res, next) => {
+  const clientId = req.user.id;
+
+  const client = await User.findById(clientId).populate('assignedAgents');
+  if (!client) {
+    return next(new ErrorResponse('Client not found', 404));
+  }
+
+  res.status(200).json({
+    success: true,
+    data: client.assignedAgents
+  });
 }); 

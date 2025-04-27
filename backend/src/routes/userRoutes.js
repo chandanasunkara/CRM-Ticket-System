@@ -5,7 +5,9 @@ const {
   getUser, 
   createUser, 
   updateUser, 
-  deleteUser 
+  deleteUser,
+  assignAgent,
+  getAssignedAgents
 } = require('../controllers/userController');
 const { protect, authorize } = require('../middleware/auth');
 const advancedResults = require('../middleware/advancedResults');
@@ -23,5 +25,9 @@ router.route('/:id')
   .get(authorize('admin'), getUser)
   .put(authorize('admin'), updateUser)
   .delete(authorize('admin'), deleteUser);
+
+// Agent assignment routes
+router.post('/assign-agent', assignAgent);
+router.get('/agents', getAssignedAgents);
 
 module.exports = router; 
