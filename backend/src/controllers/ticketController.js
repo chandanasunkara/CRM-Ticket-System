@@ -15,18 +15,31 @@ exports.getTickets = asyncHandler(async (req, res, next) => {
     // Customers can only see their own tickets
     query.customer = req.user._id;
   } else if (req.user.role === 'agent') {
-    // Agents can only see tickets from their assigned clients
-    const agent = await User.findById(req.user._id).populate('clients');
-    if (!agent.clients || agent.clients.length === 0) {
-      // If agent has no clients, return empty result
-      return res.status(200).json({
-        success: true,
-        count: 0,
-        data: []
-      });
+    // If a specific customer is requested, only show their tickets
+    if (req.query.customer) {
+      // Verify that the requested customer is assigned to this agent
+      const agent = await User.findById(req.user._id).populate('clients');
+      const clientIds = agent.clients.map(client => client._id.toString());
+      if (!clientIds.includes(req.query.customer)) {
+        return next(
+          new ErrorResponse(`Not authorized to access tickets for this customer`, 403)
+        );
+      }
+      query.customer = req.query.customer;
+    } else {
+      // Agents can only see tickets from their assigned clients
+      const agent = await User.findById(req.user._id).populate('clients');
+      if (!agent.clients || agent.clients.length === 0) {
+        // If agent has no clients, return empty result
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          data: []
+        });
+      }
+      const clientIds = agent.clients.map(client => client._id);
+      query.customer = { $in: clientIds };
     }
-    const clientIds = agent.clients.map(client => client._id);
-    query.customer = { $in: clientIds };
   }
   // Admins can see all tickets (no additional query needed)
 
@@ -112,10 +125,10 @@ exports.getTicket = asyncHandler(async (req, res, next) => {
   if (req.user.role === 'customer') {
     // Customers can only see their own tickets
     if (ticket.customer._id.toString() !== req.user.id) {
-      return next(
-        new ErrorResponse(`Not authorized to access this ticket`, 403)
-      );
-    }
+    return next(
+      new ErrorResponse(`Not authorized to access this ticket`, 403)
+    );
+  }
   } else if (req.user.role === 'agent') {
     // Agents can see tickets from their assigned clients or tickets assigned to them
     const agent = await User.findById(req.user._id).populate('clients');
@@ -268,10 +281,10 @@ exports.addComment = asyncHandler(async (req, res, next) => {
   if (req.user.role === 'customer') {
     // Customers can only comment on their own tickets
     if (ticket.customer.toString() !== req.user.id) {
-      return next(
-        new ErrorResponse(`Not authorized to comment on this ticket`, 403)
-      );
-    }
+    return next(
+      new ErrorResponse(`Not authorized to comment on this ticket`, 403)
+    );
+  }
   } else if (req.user.role === 'agent') {
     // Agents can comment on tickets from their assigned clients or tickets assigned to them
     const agent = await User.findById(req.user._id).populate('clients');
