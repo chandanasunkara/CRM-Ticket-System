@@ -18,13 +18,13 @@ const User = require('../models/Users');
 // Apply protection to all routes
 router.use(protect);
 
-// Agent assignment routes - these should be accessible to customers
-router.post('/assign-agent', assignAgent);
-router.get('/agents', getAssignedAgents);
+// Agent assignment routes - accessible to customers
+router.post('/assign-agent', authorize('customer'), assignAgent);
+router.get('/agents', authorize('customer'), getAssignedAgents);
 
 // Invitation routes
-router.post('/invitations/handle', handleInvitation);
-router.get('/invitations', getAgentInvitations);
+router.post('/invitations/handle', authorize('agent'), handleInvitation);
+router.get('/invitations', authorize('agent'), getAgentInvitations);
 
 // Routes that only admins can access
 router.route('/')
