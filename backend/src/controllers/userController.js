@@ -198,7 +198,7 @@ exports.getAgentInvitations = async (req, res) => {
 // @route   GET /api/users/agents
 // @access  Private
 exports.getAssignedAgents = asyncHandler(async (req, res, next) => {
-  const clientId = req.user.id;
+  const clientId = req.user._id;
 
   const client = await User.findById(clientId).populate('assignedAgents');
   if (!client) {
