@@ -119,9 +119,17 @@ exports.getTicket = asyncHandler(async (req, res, next) => {
   } else if (req.user.role === 'agent') {
     // Agents can see tickets from their assigned clients or tickets assigned to them
     const agent = await User.findById(req.user._id).populate('clients');
+    if (!agent) {
+      return next(
+        new ErrorResponse(`Agent not found`, 404)
+      );
+    }
+    
     const clientIds = agent.clients.map(client => client._id);
-    if (!clientIds.includes(ticket.customer._id.toString()) && 
-        (!ticket.assignedTo || ticket.assignedTo._id.toString() !== req.user._id.toString())) {
+    const isAssignedToMe = ticket.assignedTo && ticket.assignedTo._id.toString() === req.user._id.toString();
+    const isFromMyClient = clientIds.includes(ticket.customer._id.toString());
+    
+    if (!isAssignedToMe && !isFromMyClient) {
       return next(
         new ErrorResponse(`Not authorized to access this ticket`, 403)
       );
