@@ -7,7 +7,7 @@ const RegisterForm = ({handleOnchange,handleOnRegisterSubmit, formSwitcher, name
     return (
       <Container>
         <Row className="justify-content-center">
-          <Col md={8}>
+          <Col md={10}>
             <div className="login-card">
               <h1 className="text-center">Register</h1>
               <hr />
