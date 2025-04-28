@@ -46,7 +46,12 @@ const sendTokenResponse = (user, statusCode, res) => {
 exports.register = asyncHandler(async (req, res, next) => {
   const { name, email, password, role, phone, company } = req.body;
 
-  // Create user
+  // Validate role if provided
+  if (role && !['customer', 'agent', 'admin'].includes(role)) {
+    return next(new ErrorResponse('Invalid role specified', 400));
+  }
+
+  // Create user with default role as customer if not specified
   const user = await User.create({
     name,
     email,
@@ -74,8 +79,8 @@ exports.login = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Please provide an email and password', 400));
   }
 
-  // Check for user
-  const user = await User.findOne({ email }).select('+password');
+  // Check for user and include role
+  const user = await User.findOne({ email }).select('+password +role');
 
   if (!user) {
     return next(new ErrorResponse('Invalid credentials', 401));
@@ -114,7 +119,11 @@ exports.logout = asyncHandler(async (req, res, next) => {
 // @route   GET /api/auth/me
 // @access  Private
 exports.getMe = asyncHandler(async (req, res, next) => {
-  const user = await User.findById(req.user.id);
+  const user = await User.findById(req.user.id).select('+role');
+
+  if (!user) {
+    return next(new ErrorResponse('User not found', 404));
+  }
 
   res.status(200).json({
     success: true,
