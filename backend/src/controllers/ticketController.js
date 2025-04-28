@@ -125,11 +125,24 @@ exports.getTicket = asyncHandler(async (req, res, next) => {
       );
     }
     
-    const clientIds = agent.clients.map(client => client._id);
-    const isAssignedToMe = ticket.assignedTo && ticket.assignedTo._id.toString() === req.user._id.toString();
+    // Get all client IDs this agent has access to
+    const clientIds = agent.clients.map(client => client._id.toString());
+    
+    // Check if the ticket's customer is one of the agent's clients
     const isFromMyClient = clientIds.includes(ticket.customer._id.toString());
     
-    if (!isAssignedToMe && !isFromMyClient) {
+    // Check if the ticket is assigned to this agent
+    const isAssignedToMe = ticket.assignedTo && 
+                          ticket.assignedTo._id.toString() === req.user._id.toString();
+    
+    // If neither condition is met, deny access
+    if (!isFromMyClient && !isAssignedToMe) {
+      console.log('Access denied for agent:', {
+        agentId: req.user._id.toString(),
+        ticketCustomerId: ticket.customer._id.toString(),
+        ticketAssignedToId: ticket.assignedTo ? ticket.assignedTo._id.toString() : 'none',
+        agentClientIds: clientIds
+      });
       return next(
         new ErrorResponse(`Not authorized to access this ticket`, 403)
       );
