@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Table, Button, Badge, Alert, Spinner } from 'react-bootstrap';
-import { PageBreadcrumb } from '../../components/breadcrumb/Breadcrumb.comp';
-import api from '../../config/api';
-import { useNavigate } from 'react-router-dom';
+import api from '../config/api';
 
-const Invitations = () => {
-  const navigate = useNavigate();
+const AgentInvitations = () => {
   const [invitations, setInvitations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/');
-      return;
-    }
     fetchInvitations();
-  }, [navigate]);
+  }, []);
 
   const fetchInvitations = async () => {
     try {
@@ -42,17 +34,17 @@ const Invitations = () => {
         invitationId,
         action
       });
-      setSuccess(`Invitation ${action === 'accept' ? 'accepted' : 'rejected'} successfully`);
+      setSuccess(`Invitation ${action}ed successfully`);
       fetchInvitations();
     } catch (err) {
       console.error('Error handling invitation:', err);
-      setError('Failed to handle invitation');
+      setError(`Failed to ${action} invitation`);
     }
   };
 
   if (loading) {
     return (
-      <Container className="mt-4">
+      <Container className="text-center mt-5">
         <Spinner animation="border" role="status">
           <span className="visually-hidden">Loading...</span>
         </Spinner>
@@ -61,17 +53,15 @@ const Invitations = () => {
   }
 
   return (
-    <Container className="mt-4">
-      <PageBreadcrumb page="Invitations" />
+    <Container>
       <h2>My Invitations</h2>
-      
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
-
+      
       {invitations.length === 0 ? (
         <Alert variant="info">You have no pending invitations.</Alert>
       ) : (
-        <Table striped hover>
+        <Table striped bordered hover>
           <thead>
             <tr>
               <th>Client</th>
@@ -85,25 +75,34 @@ const Invitations = () => {
               <tr key={invitation._id}>
                 <td>{invitation.client.name}</td>
                 <td>
-                  <Badge bg="warning">Pending</Badge>
+                  <Badge bg={
+                    invitation.status === 'pending' ? 'warning' :
+                    invitation.status === 'accepted' ? 'success' : 'danger'
+                  }>
+                    {invitation.status}
+                  </Badge>
                 </td>
                 <td>{new Date(invitation.createdAt).toLocaleDateString()}</td>
                 <td>
-                  <Button
-                    variant="success"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => handleInvitation(invitation._id, 'accept')}
-                  >
-                    Accept
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => handleInvitation(invitation._id, 'reject')}
-                  >
-                    Reject
-                  </Button>
+                  {invitation.status === 'pending' && (
+                    <>
+                      <Button
+                        variant="success"
+                        size="sm"
+                        className="me-2"
+                        onClick={() => handleInvitation(invitation._id, 'accept')}
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={() => handleInvitation(invitation._id, 'reject')}
+                      >
+                        Reject
+                      </Button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
@@ -114,4 +113,4 @@ const Invitations = () => {
   );
 };
 
-export default Invitations; 
+export default AgentInvitations; 
