@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Table, Button, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Card, Table, Button, Badge, Tabs, Tab, Alert, Spinner } from 'react-bootstrap';
 import { PageBreadcrumb } from '../../components/breadcrumb/Breadcrumb.comp';
 import api from '../../config/api';
-import { TicketTable } from '../../components/ticket-table/TicketTable.comp';
 import { PieChart } from '../../components/pie-chart/PieChart.comp';
+import { useNavigate } from 'react-router-dom';
 
 const AgentDashboard = () => {
+  const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
   const [clientTickets, setClientTickets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -18,9 +20,33 @@ const AgentDashboard = () => {
   });
 
   useEffect(() => {
-    fetchClients();
-    fetchStats();
-  }, []);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/');
+      return;
+    }
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        await Promise.all([fetchClients(), fetchStats()]);
+      } catch (err) {
+        console.error('Error loading dashboard:', err);
+        if (err.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          navigate('/');
+        } else {
+          setError('Failed to load dashboard data');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [navigate]);
 
   useEffect(() => {
     if (selectedClient) {
@@ -30,59 +56,76 @@ const AgentDashboard = () => {
 
   const fetchClients = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await api.get('/api/users/clients', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setClients(response.data.data);
+      const response = await api.get('/api/users/clients');
+      setClients(response.data.data || []);
     } catch (error) {
       console.error('Error fetching clients:', error);
-    } finally {
-      setLoading(false);
+      if (error.response?.status === 401) {
+        throw error;
+      }
+      setError('Failed to fetch clients');
     }
   };
 
   const fetchClientTickets = async (clientId) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await api.get(`/api/tickets/client/${clientId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setClientTickets(response.data.data);
+      setLoading(true);
+      const response = await api.get(`/api/tickets/client/${clientId}`);
+      setClientTickets(response.data.data || []);
     } catch (error) {
       console.error('Error fetching client tickets:', error);
+      if (error.response?.status === 401) {
+        throw error;
+      }
+      setError('Failed to load client tickets');
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await api.get('/api/tickets/stats', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setStats(response.data.data);
+      const response = await api.get('/api/tickets/stats');
+      const data = response.data.data || {
+        total: 0,
+        pending: 0,
+        open: 0,
+        closed: 0
+      };
+      setStats(data);
     } catch (error) {
       console.error('Error fetching stats:', error);
+      if (error.response?.status === 401) {
+        throw error;
+      }
+      setError('Failed to load ticket statistics');
     }
   };
 
   const handleResolveTicket = async (ticketId) => {
     try {
-      const token = localStorage.getItem('token');
-      await api.put(`/api/tickets/${ticketId}/resolve`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.put(`/api/tickets/${ticketId}`, { status: 'closed' });
       if (selectedClient) {
         fetchClientTickets(selectedClient._id);
+        fetchStats();
       }
-      fetchStats();
     } catch (error) {
       console.error('Error resolving ticket:', error);
+      if (error.response?.status === 401) {
+        throw error;
+      }
+      setError('Failed to resolve ticket');
     }
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <Container className="text-center mt-5">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </Container>
+    );
   }
 
   return (
@@ -93,90 +136,216 @@ const AgentDashboard = () => {
         </Col>
       </Row>
 
-      <Row className="mt-4">
-        <Col md={4}>
-          <Card>
-            <Card.Header>
-              <h4>Ticket Statistics</h4>
-            </Card.Header>
-            <Card.Body>
-              <PieChart stats={stats} />
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={8}>
-          <Card>
-            <Card.Header>
-              <h4>Assigned Clients</h4>
-            </Card.Header>
-            <Card.Body>
-              <Table striped hover>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Active Tickets</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {clients.map(client => (
-                    <tr 
-                      key={client._id}
-                      onClick={() => setSelectedClient(client)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <td>{client.name}</td>
-                      <td>{client.email}</td>
-                      <td>
-                        <Badge bg="primary">{client.activeTickets || 0}</Badge>
-                      </td>
-                      <td>
-                        <Button 
-                          variant="primary" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedClient(client);
-                          }}
-                        >
-                          View Tickets
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-
-      {selectedClient && (
-        <Row className="mt-4">
-          <Col>
-            <Card>
-              <Card.Header className="d-flex justify-content-between align-items-center">
-                <h4>Tickets for {selectedClient.name}</h4>
-                <Button 
-                  variant="secondary" 
-                  size="sm"
-                  onClick={() => setSelectedClient(null)}
-                >
-                  Back to Clients
-                </Button>
-              </Card.Header>
-              <Card.Body>
-                <TicketTable 
-                  tickets={clientTickets}
-                  onResolve={handleResolveTicket}
-                  showResolveButton={true}
-                />
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+      {error && (
+        <Alert variant="danger" className="mt-3">
+          {error}
+        </Alert>
       )}
+
+      <Tabs defaultActiveKey="dashboard" className="mb-3">
+        <Tab eventKey="dashboard" title="Dashboard">
+          <Row className="mt-4">
+            <Col md={6}>
+              <Card>
+                <Card.Header>
+                  <h4>Ticket Statistics</h4>
+                </Card.Header>
+                <Card.Body>
+                  <PieChart data={stats} />
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={6}>
+              <Card>
+                <Card.Header>
+                  <h4>Clients</h4>
+                </Card.Header>
+                <Card.Body>
+                  <Table striped hover>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Active Tickets</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {clients.map((client) => (
+                        <tr key={client._id}>
+                          <td>{client.name}</td>
+                          <td>{client.email}</td>
+                          <td>
+                            <Badge bg="primary">
+                              {clientTickets.filter(t => t.status === 'open').length}
+                            </Badge>
+                          </td>
+                          <td>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => setSelectedClient(client)}
+                            >
+                              View Tickets
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          {selectedClient && (
+            <Row className="mt-4">
+              <Col>
+                <Card>
+                  <Card.Header className="d-flex justify-content-between align-items-center">
+                    <h4>{selectedClient.name}'s Tickets</h4>
+                    <Button variant="secondary" size="sm" onClick={() => setSelectedClient(null)}>
+                      Back to Clients
+                    </Button>
+                  </Card.Header>
+                  <Card.Body>
+                    <Table striped hover>
+                      <thead>
+                        <tr>
+                          <th>Subject</th>
+                          <th>Status</th>
+                          <th>Priority</th>
+                          <th>Created</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {clientTickets.map((ticket) => (
+                          <tr key={ticket._id}>
+                            <td>{ticket.subject}</td>
+                            <td>
+                              <Badge bg={ticket.status === 'open' ? 'success' : 'secondary'}>
+                                {ticket.status}
+                              </Badge>
+                            </td>
+                            <td>{ticket.priority}</td>
+                            <td>{new Date(ticket.createdAt).toLocaleDateString()}</td>
+                            <td>
+                              {ticket.status === 'open' && (
+                                <Button
+                                  variant="success"
+                                  size="sm"
+                                  onClick={() => handleResolveTicket(ticket._id)}
+                                >
+                                  Resolve
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+          )}
+        </Tab>
+        <Tab eventKey="clients" title="Clients">
+          <Row>
+            <Col>
+              <Card>
+                <Card.Header>
+                  <h4>My Clients</h4>
+                </Card.Header>
+                <Card.Body>
+                  <Table striped hover>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {clients.map((client) => (
+                        <tr key={client._id}>
+                          <td>{client.name}</td>
+                          <td>{client.email}</td>
+                          <td>{client.phone}</td>
+                          <td>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => setSelectedClient(client)}
+                            >
+                              View Tickets
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+
+          {selectedClient && (
+            <Row className="mt-4">
+              <Col>
+                <Card>
+                  <Card.Header className="d-flex justify-content-between align-items-center">
+                    <h4>{selectedClient.name}'s Tickets</h4>
+                    <Button variant="secondary" size="sm" onClick={() => setSelectedClient(null)}>
+                      Back to Clients
+                    </Button>
+                  </Card.Header>
+                  <Card.Body>
+                    <Table striped hover>
+                      <thead>
+                        <tr>
+                          <th>Subject</th>
+                          <th>Status</th>
+                          <th>Priority</th>
+                          <th>Created</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {clientTickets.map((ticket) => (
+                          <tr key={ticket._id}>
+                            <td>{ticket.subject}</td>
+                            <td>
+                              <Badge bg={ticket.status === 'open' ? 'success' : 'secondary'}>
+                                {ticket.status}
+                              </Badge>
+                            </td>
+                            <td>{ticket.priority}</td>
+                            <td>{new Date(ticket.createdAt).toLocaleDateString()}</td>
+                            <td>
+                              {ticket.status === 'open' && (
+                                <Button
+                                  variant="success"
+                                  size="sm"
+                                  onClick={() => handleResolveTicket(ticket._id)}
+                                >
+                                  Resolve
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+          )}
+        </Tab>
+      </Tabs>
     </Container>
   );
 };

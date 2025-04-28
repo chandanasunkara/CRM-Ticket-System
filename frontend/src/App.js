@@ -61,18 +61,18 @@ function App() {
           }
         />
         <Route
-          path="/invitations"
-          element={
-            <PrivateRoute>
-              <Invitations />
-            </PrivateRoute>
-          }
-        />
-        <Route
           path="/profile"
           element={
             <PrivateRoute>
               <Profile />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/invitations"
+          element={
+            <PrivateRoute>
+              <Invitations />
             </PrivateRoute>
           }
         />
