@@ -117,10 +117,11 @@ exports.getTicket = asyncHandler(async (req, res, next) => {
       );
     }
   } else if (req.user.role === 'agent') {
-    // Agents can only see tickets from their assigned clients
+    // Agents can see tickets from their assigned clients or tickets assigned to them
     const agent = await User.findById(req.user._id).populate('clients');
     const clientIds = agent.clients.map(client => client._id);
-    if (!clientIds.includes(ticket.customer._id.toString())) {
+    if (!clientIds.includes(ticket.customer._id.toString()) && 
+        (!ticket.assignedTo || ticket.assignedTo._id.toString() !== req.user._id.toString())) {
       return next(
         new ErrorResponse(`Not authorized to access this ticket`, 403)
       );
@@ -242,15 +243,26 @@ exports.addComment = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Make sure user is ticket owner, assigned agent, or admin
-  if (
-    req.user.role === 'customer' && 
-    ticket.customer.toString() !== req.user.id
-  ) {
-    return next(
-      new ErrorResponse(`Not authorized to comment on this ticket`, 403)
-    );
+  // Check if user has access to this ticket
+  if (req.user.role === 'customer') {
+    // Customers can only comment on their own tickets
+    if (ticket.customer.toString() !== req.user.id) {
+      return next(
+        new ErrorResponse(`Not authorized to comment on this ticket`, 403)
+      );
+    }
+  } else if (req.user.role === 'agent') {
+    // Agents can comment on tickets from their assigned clients or tickets assigned to them
+    const agent = await User.findById(req.user._id).populate('clients');
+    const clientIds = agent.clients.map(client => client._id);
+    if (!clientIds.includes(ticket.customer.toString()) && 
+        (!ticket.assignedTo || ticket.assignedTo.toString() !== req.user._id.toString())) {
+      return next(
+        new ErrorResponse(`Not authorized to comment on this ticket`, 403)
+      );
+    }
   }
+  // Admins can comment on all tickets
 
   // Add comment
   const comment = {
@@ -262,7 +274,7 @@ exports.addComment = asyncHandler(async (req, res, next) => {
 
   // Update ticket status based on who's commenting
   if (req.user.role === 'customer') {
-    ticket.status = 'open'; // or another appropriate status
+    ticket.status = 'open';
   } else if (req.user.role === 'agent' || req.user.role === 'admin') {
     if (req.body.status) {
       ticket.status = req.body.status;
@@ -277,11 +289,11 @@ exports.addComment = asyncHandler(async (req, res, next) => {
   const updatedTicket = await Ticket.findById(req.params.id)
     .populate({
       path: 'customer',
-      select: 'name email'
+      select: 'name email role'
     })
     .populate({
       path: 'assignedTo',
-      select: 'name email'
+      select: 'name email role'
     })
     .populate({
       path: 'comments.user',
