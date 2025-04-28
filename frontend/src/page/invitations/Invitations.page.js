@@ -1,115 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Table, Button, Badge, Alert, Spinner } from 'react-bootstrap';
+import React from 'react';
+import { Container } from 'react-bootstrap';
 import { PageBreadcrumb } from '../../components/breadcrumb/Breadcrumb.comp';
-import api from '../../config/api';
-import { useNavigate } from 'react-router-dom';
+import AgentInvitations from '../../components/AgentInvitations';
 
 const Invitations = () => {
-  const navigate = useNavigate();
-  const [invitations, setInvitations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      navigate('/');
-      return;
-    }
-    fetchInvitations();
-  }, [navigate]);
-
-  const fetchInvitations = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await api.get('/api/users/invitations');
-      setInvitations(response.data);
-    } catch (err) {
-      console.error('Error fetching invitations:', err);
-      setError('Failed to fetch invitations');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleInvitation = async (invitationId, action) => {
-    try {
-      setError(null);
-      setSuccess(null);
-      await api.post('/api/users/invitations/handle', {
-        invitationId,
-        action
-      });
-      setSuccess(`Invitation ${action === 'accept' ? 'accepted' : 'rejected'} successfully`);
-      fetchInvitations();
-    } catch (err) {
-      console.error('Error handling invitation:', err);
-      setError('Failed to handle invitation');
-    }
-  };
-
-  if (loading) {
-    return (
-      <Container className="mt-4">
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-      </Container>
-    );
-  }
-
   return (
-    <Container className="mt-4">
+    <Container>
       <PageBreadcrumb page="Invitations" />
-      <h2>My Invitations</h2>
-      
-      {error && <Alert variant="danger">{error}</Alert>}
-      {success && <Alert variant="success">{success}</Alert>}
-
-      {invitations.length === 0 ? (
-        <Alert variant="info">You have no pending invitations.</Alert>
-      ) : (
-        <Table striped hover>
-          <thead>
-            <tr>
-              <th>Client</th>
-              <th>Status</th>
-              <th>Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invitations.map((invitation) => (
-              <tr key={invitation._id}>
-                <td>{invitation.client.name}</td>
-                <td>
-                  <Badge bg="warning">Pending</Badge>
-                </td>
-                <td>{new Date(invitation.createdAt).toLocaleDateString()}</td>
-                <td>
-                  <Button
-                    variant="success"
-                    size="sm"
-                    className="me-2"
-                    onClick={() => handleInvitation(invitation._id, 'accept')}
-                  >
-                    Accept
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={() => handleInvitation(invitation._id, 'reject')}
-                  >
-                    Reject
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      )}
+      <AgentInvitations />
     </Container>
   );
 };
