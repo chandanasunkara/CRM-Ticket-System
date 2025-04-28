@@ -100,18 +100,27 @@ exports.assignAgent = async (req, res) => {
     // Find agent by email
     const agent = await User.findOne({ email: agentEmail, role: 'agent' });
     if (!agent) {
-      return res.status(404).json({ message: 'Agent not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Agent not found' 
+      });
     }
 
     // Find client
     const client = await User.findById(clientId);
     if (!client) {
-      return res.status(404).json({ message: 'Client not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Client not found' 
+      });
     }
 
     // Check if agent is already assigned
-    if (client.assignedAgents.includes(agent._id)) {
-      return res.status(400).json({ message: 'Agent is already assigned to this client' });
+    if (client.assignedAgents && client.assignedAgents.includes(agent._id)) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Agent is already assigned to this client' 
+      });
     }
 
     // Check if invitation already exists
@@ -121,7 +130,10 @@ exports.assignAgent = async (req, res) => {
     });
 
     if (existingInvitation) {
-      return res.status(400).json({ message: 'Invitation already sent to this agent' });
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invitation already sent to this agent' 
+      });
     }
 
     // Create new invitation
@@ -134,16 +146,21 @@ exports.assignAgent = async (req, res) => {
     await sendEmail({
       to: agent.email,
       subject: 'New Client Invitation',
-      text: `You have been invited to work with ${client.companyName}. Please check your dashboard to accept or reject this invitation.`
+      text: `You have been invited to work with ${client.name || 'a client'}. Please check your dashboard to accept or reject this invitation.`
     });
 
     res.status(201).json({
+      success: true,
       message: 'Invitation sent successfully',
-      invitation
+      data: invitation
     });
   } catch (error) {
     console.error('Error assigning agent:', error);
-    res.status(500).json({ message: 'Error assigning agent', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Error assigning agent',
+      error: error.message 
+    });
   }
 };
 
@@ -155,11 +172,17 @@ exports.handleInvitation = async (req, res) => {
 
     const invitation = await Invitation.findById(invitationId);
     if (!invitation) {
-      return res.status(404).json({ message: 'Invitation not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Invitation not found' 
+      });
     }
 
     if (invitation.agent.toString() !== agentId.toString()) {
-      return res.status(403).json({ message: 'Not authorized to handle this invitation' });
+      return res.status(403).json({ 
+        success: false,
+        message: 'Not authorized to handle this invitation' 
+      });
     }
 
     if (action === 'accept') {
@@ -176,12 +199,17 @@ exports.handleInvitation = async (req, res) => {
     await invitation.save();
 
     res.status(200).json({
+      success: true,
       message: `Invitation ${action}ed successfully`,
-      invitation
+      data: invitation
     });
   } catch (error) {
     console.error('Error handling invitation:', error);
-    res.status(500).json({ message: 'Error handling invitation', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Error handling invitation',
+      error: error.message 
+    });
   }
 };
 
@@ -193,10 +221,17 @@ exports.getAgentInvitations = async (req, res) => {
       .populate('client', 'companyName email')
       .sort({ createdAt: -1 });
 
-    res.status(200).json(invitations);
+    res.status(200).json({
+      success: true,
+      data: invitations
+    });
   } catch (error) {
     console.error('Error fetching invitations:', error);
-    res.status(500).json({ message: 'Error fetching invitations', error: error.message });
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching invitations',
+      error: error.message 
+    });
   }
 };
 
