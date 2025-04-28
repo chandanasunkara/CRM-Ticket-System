@@ -4,35 +4,35 @@
 /**
  * Send an email
  * @param {Object} options - Email options
- * @param {string} options.email - Recipient email
+ * @param {string} options.to - Recipient email
  * @param {string} options.subject - Email subject
- * @param {string} options.message - Email body
+ * @param {string} options.text - Email body
  */
 const sendEmail = async (options) => {
-    // For development, just log the email
-    console.log('Email would be sent with these details:');
-    console.log(`To: ${options.email}`);
-    console.log(`Subject: ${options.subject}`);
-    console.log(`Message: ${options.message}`);
-    
-    // In production, you would use an email service:
-    /*
-    Example with SendGrid:
-    
-    const sgMail = require('@sendgrid/mail');
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-    
-    const msg = {
-      to: options.email,
-      from: process.env.FROM_EMAIL,
-      subject: options.subject,
-      text: options.message
-    };
-    
-    await sgMail.send(msg);
-    */
-    
-    return true;
+  // For development, just log the email
+  console.log('Email would be sent with these details:');
+  console.log(`To: ${options.to}`);
+  console.log(`Subject: ${options.subject}`);
+  console.log(`Message: ${options.text}`);
+  
+  // In production, you would use an email service:
+  /*
+  Example with SendGrid:
+  
+  const sgMail = require('@sendgrid/mail');
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  
+  const msg = {
+    to: options.to,
+    from: process.env.FROM_EMAIL,
+    subject: options.subject,
+    text: options.text
   };
   
-  module.exports = sendEmail; 
+  await sgMail.send(msg);
+  */
+  
+  return true;
+};
+
+module.exports = { sendEmail }; 
