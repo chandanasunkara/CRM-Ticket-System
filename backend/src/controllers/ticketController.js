@@ -28,7 +28,33 @@ exports.getTickets = asyncHandler(async (req, res, next) => {
   }
   // Admins can see all tickets
 
-  res.status(200).json(res.advancedResults);
+  // Get ticket stats
+  const stats = await Ticket.aggregate([
+    {
+      $group: {
+        _id: '$status',
+        count: { $sum: 1 }
+      }
+    }
+  ]);
+
+  // Format stats
+  const formattedStats = {
+    total: 0,
+    pending: 0,
+    open: 0,
+    closed: 0
+  };
+
+  stats.forEach(stat => {
+    formattedStats.total += stat.count;
+    formattedStats[stat._id] = stat.count;
+  });
+
+  res.status(200).json({
+    ...res.advancedResults,
+    stats: formattedStats
+  });
 });
 
 // @desc    Get single ticket
