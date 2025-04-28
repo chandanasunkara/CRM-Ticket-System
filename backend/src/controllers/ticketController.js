@@ -8,10 +8,12 @@ const asyncHandler = require('../middleware/async');
 // @route   GET /api/tickets
 // @access  Private
 exports.getTickets = asyncHandler(async (req, res, next) => {
+  let query = {};
+
   // Add role-based filtering
   if (req.user.role === 'customer') {
     // Customers can only see their own tickets
-    req.query.customer = req.user._id;
+    query.customer = req.user._id;
   } else if (req.user.role === 'agent') {
     // Agents can only see tickets from their assigned clients
     const agent = await User.findById(req.user._id).populate('clients');
@@ -24,12 +26,36 @@ exports.getTickets = asyncHandler(async (req, res, next) => {
       });
     }
     const clientIds = agent.clients.map(client => client._id);
-    req.query.customer = { $in: clientIds };
+    query.customer = { $in: clientIds };
   }
-  // Admins can see all tickets
+  // Admins can see all tickets (no additional query needed)
 
-  // Get ticket stats
+  // Apply any additional filters from the request
+  if (req.query.status) {
+    query.status = req.query.status;
+  }
+  if (req.query.priority) {
+    query.priority = req.query.priority;
+  }
+  if (req.query.category) {
+    query.category = req.query.category;
+  }
+
+  // Get tickets with the applied filters
+  const tickets = await Ticket.find(query)
+    .populate({
+      path: 'customer',
+      select: 'name email role'
+    })
+    .populate({
+      path: 'assignedTo',
+      select: 'name email role'
+    })
+    .sort('-createdAt');
+
+  // Get ticket stats with the same filters
   const stats = await Ticket.aggregate([
+    { $match: query },
     {
       $group: {
         _id: '$status',
@@ -40,19 +66,20 @@ exports.getTickets = asyncHandler(async (req, res, next) => {
 
   // Format stats
   const formattedStats = {
-    total: 0,
+    total: tickets.length,
     pending: 0,
     open: 0,
     closed: 0
   };
 
   stats.forEach(stat => {
-    formattedStats.total += stat.count;
     formattedStats[stat._id] = stat.count;
   });
 
   res.status(200).json({
-    ...res.advancedResults,
+    success: true,
+    count: tickets.length,
+    data: tickets,
     stats: formattedStats
   });
 });
@@ -64,11 +91,11 @@ exports.getTicket = asyncHandler(async (req, res, next) => {
   const ticket = await Ticket.findById(req.params.id)
     .populate({
       path: 'customer',
-      select: 'name email'
+      select: 'name email role'
     })
     .populate({
       path: 'assignedTo',
-      select: 'name email'
+      select: 'name email role'
     })
     .populate({
       path: 'comments.user',
@@ -81,15 +108,25 @@ exports.getTicket = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Make sure user is ticket owner, assigned agent, or admin
-  if (
-    req.user.role === 'customer' && 
-    ticket.customer._id.toString() !== req.user.id
-  ) {
-    return next(
-      new ErrorResponse(`Not authorized to access this ticket`, 403)
-    );
+  // Check if user has access to this ticket
+  if (req.user.role === 'customer') {
+    // Customers can only see their own tickets
+    if (ticket.customer._id.toString() !== req.user.id) {
+      return next(
+        new ErrorResponse(`Not authorized to access this ticket`, 403)
+      );
+    }
+  } else if (req.user.role === 'agent') {
+    // Agents can only see tickets from their assigned clients
+    const agent = await User.findById(req.user._id).populate('clients');
+    const clientIds = agent.clients.map(client => client._id);
+    if (!clientIds.includes(ticket.customer._id.toString())) {
+      return next(
+        new ErrorResponse(`Not authorized to access this ticket`, 403)
+      );
+    }
   }
+  // Admins can see all tickets
 
   res.status(200).json({
     success: true,
