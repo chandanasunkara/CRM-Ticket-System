@@ -22,6 +22,7 @@ const AgentDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [ticketsPerPage] = useState(10);
   const [allOpenTickets, setAllOpenTickets] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -54,13 +55,13 @@ const AgentDashboard = () => {
     const interval = setInterval(() => {
       fetchStats();
       fetchAllOpenTickets();
-      if (selectedClient) {
-        fetchClientTickets(selectedClient._id);
-      }
+    if (selectedClient) {
+      fetchClientTickets(selectedClient._id);
+    }
     }, 30000); // Update every 30 seconds
 
     return () => clearInterval(interval);
-  }, [navigate, selectedClient]);
+  }, [navigate, selectedClient, refreshKey]);
 
   const fetchAllOpenTickets = async () => {
     try {
@@ -164,6 +165,11 @@ const AgentDashboard = () => {
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  const handleRefresh = () => {
+    setLoading(true);
+    setRefreshKey(prev => prev + 1);
+  };
+
   if (loading) {
     return (
       <Container className="text-center mt-5">
@@ -179,6 +185,15 @@ const AgentDashboard = () => {
       <Row className="mt-3">
         <Col>
           <PageBreadcrumb page="Agent Dashboard" />
+        </Col>
+        <Col className="text-end">
+          <Button 
+            variant="outline-primary" 
+            onClick={handleRefresh}
+            disabled={loading}
+          >
+            {loading ? 'Refreshing...' : 'Refresh Dashboard'}
+          </Button>
         </Col>
       </Row>
 
