@@ -49,7 +49,10 @@ exports.authorize = (...roles) => {
       return next(new ErrorResponse('User not found', 404));
     }
     
-    if (!roles.includes(req.user.role)) {
+    // Flatten the roles array in case it's nested
+    const allowedRoles = roles.flat();
+    
+    if (!allowedRoles.includes(req.user.role)) {
       return next(
         new ErrorResponse(
           `User role ${req.user.role} is not authorized to access this route`,
