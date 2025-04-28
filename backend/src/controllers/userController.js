@@ -94,7 +94,8 @@ exports.deleteUser = asyncHandler(async (req, res, next) => {
 // @access  Private
 exports.assignAgent = async (req, res) => {
   try {
-    const { agentEmail, clientId } = req.body;
+    const { agentEmail } = req.body;
+    const clientId = req.user._id; // Get client ID from authenticated user
 
     // Find agent by email
     const agent = await User.findOne({ email: agentEmail, role: 'agent' });
@@ -106,6 +107,11 @@ exports.assignAgent = async (req, res) => {
     const client = await User.findById(clientId);
     if (!client) {
       return res.status(404).json({ message: 'Client not found' });
+    }
+
+    // Check if agent is already assigned
+    if (client.assignedAgents.includes(agent._id)) {
+      return res.status(400).json({ message: 'Agent is already assigned to this client' });
     }
 
     // Check if invitation already exists
