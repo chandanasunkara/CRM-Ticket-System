@@ -6,8 +6,8 @@ const asyncHandler = require('../middleware/async');
 const sendEmail = require('../util/sendEmails');
 
 // Helper to get signed JWT token
-const getSignedJwtToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+const getSignedJwtToken = (user) => {
+  return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE || '30d'
   });
 };
@@ -15,7 +15,7 @@ const getSignedJwtToken = (id) => {
 // Helper to set token in cookie
 const sendTokenResponse = (user, statusCode, res) => {
   // Create token
-  const token = getSignedJwtToken(user._id);
+  const token = getSignedJwtToken(user);
 
   const options = {
     expires: new Date(

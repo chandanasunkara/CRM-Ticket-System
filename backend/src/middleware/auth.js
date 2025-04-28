@@ -27,11 +27,14 @@ exports.protect = asyncHandler(async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Find user by id from decoded token
-    req.user = await User.findById(decoded.id).select('+role');
+    req.user = await User.findById(decoded.id);
 
     if (!req.user) {
       return next(new ErrorResponse('User not found', 404));
     }
+
+    // Set the role from the token
+    req.user.role = decoded.role;
 
     next();
   } catch (err) {
