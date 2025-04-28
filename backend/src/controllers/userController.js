@@ -191,6 +191,13 @@ exports.handleInvitation = async (req, res) => {
         invitation.client,
         { $addToSet: { assignedAgents: agentId } }
       );
+      
+      // Add client to agent's clients list
+      await User.findByIdAndUpdate(
+        agentId,
+        { $addToSet: { clients: invitation.client } }
+      );
+      
       invitation.status = 'accepted';
     } else if (action === 'reject') {
       invitation.status = 'rejected';
@@ -250,4 +257,29 @@ exports.getAssignedAgents = asyncHandler(async (req, res, next) => {
     success: true,
     data: client.assignedAgents
   });
-}); 
+});
+
+// @desc    Get client's pending invitations
+// @route   GET /api/users/pending-invitations
+// @access  Private
+exports.getPendingInvitations = async (req, res) => {
+  try {
+    const clientId = req.user._id;
+    const invitations = await Invitation.find({ 
+      client: clientId,
+      status: 'pending'
+    }).populate('agent', 'name email');
+
+    res.status(200).json({
+      success: true,
+      data: invitations
+    });
+  } catch (error) {
+    console.error('Error fetching pending invitations:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching pending invitations',
+      error: error.message 
+    });
+  }
+}; 

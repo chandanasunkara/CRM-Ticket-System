@@ -9,7 +9,8 @@ const {
   assignAgent,
   getAssignedAgents,
   handleInvitation,
-  getAgentInvitations
+  getAgentInvitations,
+  getPendingInvitations
 } = require('../controllers/userController');
 const { protect, authorize } = require('../middleware/auth');
 const advancedResults = require('../middleware/advancedResults');
@@ -21,6 +22,7 @@ router.use(protect);
 // Agent assignment routes - accessible to customers
 router.post('/assign-agent', authorize(['customer', 'admin']), assignAgent);
 router.get('/agents', authorize(['customer', 'admin']), getAssignedAgents);
+router.get('/pending-invitations', authorize(['customer', 'admin']), getPendingInvitations);
 
 // Invitation routes
 router.post('/invitations/handle', authorize(['agent', 'admin']), handleInvitation);
