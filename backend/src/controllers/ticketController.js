@@ -275,9 +275,30 @@ exports.addComment = asyncHandler(async (req, res, next) => {
   } else if (req.user.role === 'agent') {
     // Agents can comment on tickets from their assigned clients or tickets assigned to them
     const agent = await User.findById(req.user._id).populate('clients');
-    const clientIds = agent.clients.map(client => client._id);
-    if (!clientIds.includes(ticket.customer.toString()) && 
-        (!ticket.assignedTo || ticket.assignedTo.toString() !== req.user._id.toString())) {
+    if (!agent) {
+      return next(
+        new ErrorResponse(`Agent not found`, 404)
+      );
+    }
+    
+    // Get all client IDs this agent has access to
+    const clientIds = agent.clients.map(client => client._id.toString());
+    
+    // Check if the ticket's customer is one of the agent's clients
+    const isFromMyClient = clientIds.includes(ticket.customer.toString());
+    
+    // Check if the ticket is assigned to this agent
+    const isAssignedToMe = ticket.assignedTo && 
+                          ticket.assignedTo.toString() === req.user._id.toString();
+    
+    // If neither condition is met, deny access
+    if (!isFromMyClient && !isAssignedToMe) {
+      console.log('Access denied for agent comment:', {
+        agentId: req.user._id.toString(),
+        ticketCustomerId: ticket.customer.toString(),
+        ticketAssignedToId: ticket.assignedTo ? ticket.assignedTo.toString() : 'none',
+        agentClientIds: clientIds
+      });
       return next(
         new ErrorResponse(`Not authorized to comment on this ticket`, 403)
       );
