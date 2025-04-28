@@ -29,8 +29,8 @@ const AddAgent = () => {
 
     try {
       // Get the current user's ID (client)
-      const userResponse = await api.get('/api/users/me');
-      const clientId = userResponse.data._id;
+      const userResponse = await api.get('/api/auth/me');
+      const clientId = userResponse.data.data._id;
 
       // Assign the agent to the client
       await api.post('/api/users/assign-agent', {
