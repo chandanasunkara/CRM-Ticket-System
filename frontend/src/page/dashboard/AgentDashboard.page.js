@@ -30,7 +30,7 @@ const AgentDashboard = () => {
       try {
         setLoading(true);
         setError(null);
-        await Promise.all([fetchClients(), fetchStats()]);
+        await Promise.all([fetchStats()]);
       } catch (err) {
         console.error('Error loading dashboard:', err);
         if (err.response?.status === 401) {
@@ -48,16 +48,15 @@ const AgentDashboard = () => {
     fetchData();
   }, [navigate]);
 
-  useEffect(() => {
-    if (selectedClient) {
-      fetchClientTickets(selectedClient._id);
-    }
-  }, [selectedClient]);
-
   const fetchClients = async () => {
     try {
       const response = await api.get('/api/users/clients');
       setClients(response.data.data || []);
+      
+      // If there are clients, select the first one by default
+      if (response.data.data && response.data.data.length > 0) {
+        setSelectedClient(response.data.data[0]);
+      }
     } catch (error) {
       console.error('Error fetching clients:', error);
       if (error.response?.status === 401) {
@@ -70,7 +69,7 @@ const AgentDashboard = () => {
   const fetchClientTickets = async (clientId) => {
     try {
       setLoading(true);
-      const response = await api.get(`/api/tickets/client/${clientId}`);
+      const response = await api.get(`/api/tickets?customer=${clientId}`);
       setClientTickets(response.data.data || []);
     } catch (error) {
       console.error('Error fetching client tickets:', error);
@@ -85,14 +84,14 @@ const AgentDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await api.get('/api/tickets/stats');
-      const data = response.data.data || {
+      const response = await api.get('/api/tickets');
+      const stats = response.data.stats || {
         total: 0,
         pending: 0,
         open: 0,
         closed: 0
       };
-      setStats(data);
+      setStats(stats);
     } catch (error) {
       console.error('Error fetching stats:', error);
       if (error.response?.status === 401) {
@@ -145,7 +144,7 @@ const AgentDashboard = () => {
       <Tabs defaultActiveKey="dashboard" className="mb-3">
         <Tab eventKey="dashboard" title="Dashboard">
           <Row className="mt-4">
-            <Col md={6}>
+            <Col md={12}>
               <Card>
                 <Card.Header>
                   <h4>Ticket Statistics</h4>
@@ -155,10 +154,57 @@ const AgentDashboard = () => {
                 </Card.Body>
               </Card>
             </Col>
-            <Col md={6}>
+          </Row>
+          <Row className="mt-4">
+            <Col md={12}>
               <Card>
                 <Card.Header>
-                  <h4>Clients</h4>
+                  <h4>Recent Activity</h4>
+                </Card.Header>
+                <Card.Body>
+                  <Table striped hover>
+                    <thead>
+                      <tr>
+                        <th>Ticket ID</th>
+                        <th>Status</th>
+                        <th>Last Updated</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {clientTickets.slice(0, 5).map((ticket) => (
+                        <tr key={ticket._id}>
+                          <td>{ticket._id}</td>
+                          <td>
+                            <Badge bg={ticket.status === 'open' ? 'danger' : ticket.status === 'in-progress' ? 'warning' : 'success'}>
+                              {ticket.status}
+                            </Badge>
+                          </td>
+                          <td>{new Date(ticket.updatedAt).toLocaleString()}</td>
+                          <td>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => navigate(`/ticket/${ticket._id}`)}
+                            >
+                              View
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Tab>
+        <Tab eventKey="clients" title="Clients" onEnter={fetchClients}>
+          <Row className="mt-4">
+            <Col md={12}>
+              <Card>
+                <Card.Header>
+                  <h4>My Clients</h4>
                 </Card.Header>
                 <Card.Body>
                   <Table striped hover>
@@ -184,7 +230,10 @@ const AgentDashboard = () => {
                             <Button
                               variant="primary"
                               size="sm"
-                              onClick={() => setSelectedClient(client)}
+                              onClick={() => {
+                                setSelectedClient(client);
+                                fetchClientTickets(client._id);
+                              }}
                             >
                               View Tickets
                             </Button>
@@ -197,16 +246,12 @@ const AgentDashboard = () => {
               </Card>
             </Col>
           </Row>
-
           {selectedClient && (
             <Row className="mt-4">
-              <Col>
+              <Col md={12}>
                 <Card>
-                  <Card.Header className="d-flex justify-content-between align-items-center">
+                  <Card.Header>
                     <h4>{selectedClient.name}'s Tickets</h4>
-                    <Button variant="secondary" size="sm" onClick={() => setSelectedClient(null)}>
-                      Back to Clients
-                    </Button>
                   </Card.Header>
                   <Card.Body>
                     <Table striped hover>
@@ -214,7 +259,6 @@ const AgentDashboard = () => {
                         <tr>
                           <th>Subject</th>
                           <th>Status</th>
-                          <th>Priority</th>
                           <th>Created</th>
                           <th>Actions</th>
                         </tr>
@@ -224,111 +268,24 @@ const AgentDashboard = () => {
                           <tr key={ticket._id}>
                             <td>{ticket.subject}</td>
                             <td>
-                              <Badge bg={ticket.status === 'open' ? 'success' : 'secondary'}>
+                              <Badge bg={ticket.status === 'open' ? 'danger' : ticket.status === 'in-progress' ? 'warning' : 'success'}>
                                 {ticket.status}
                               </Badge>
                             </td>
-                            <td>{ticket.priority}</td>
-                            <td>{new Date(ticket.createdAt).toLocaleDateString()}</td>
+                            <td>{new Date(ticket.createdAt).toLocaleString()}</td>
                             <td>
-                              {ticket.status === 'open' && (
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => navigate(`/ticket/${ticket._id}`)}
+                              >
+                                View
+                              </Button>
+                              {ticket.status !== 'closed' && (
                                 <Button
                                   variant="success"
                                   size="sm"
-                                  onClick={() => handleResolveTicket(ticket._id)}
-                                >
-                                  Resolve
-                                </Button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </Table>
-                  </Card.Body>
-                </Card>
-              </Col>
-            </Row>
-          )}
-        </Tab>
-        <Tab eventKey="clients" title="Clients">
-          <Row>
-            <Col>
-              <Card>
-                <Card.Header>
-                  <h4>My Clients</h4>
-                </Card.Header>
-                <Card.Body>
-                  <Table striped hover>
-                    <thead>
-                      <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {clients.map((client) => (
-                        <tr key={client._id}>
-                          <td>{client.name}</td>
-                          <td>{client.email}</td>
-                          <td>{client.phone}</td>
-                          <td>
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() => setSelectedClient(client)}
-                            >
-                              View Tickets
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-
-          {selectedClient && (
-            <Row className="mt-4">
-              <Col>
-                <Card>
-                  <Card.Header className="d-flex justify-content-between align-items-center">
-                    <h4>{selectedClient.name}'s Tickets</h4>
-                    <Button variant="secondary" size="sm" onClick={() => setSelectedClient(null)}>
-                      Back to Clients
-                    </Button>
-                  </Card.Header>
-                  <Card.Body>
-                    <Table striped hover>
-                      <thead>
-                        <tr>
-                          <th>Subject</th>
-                          <th>Status</th>
-                          <th>Priority</th>
-                          <th>Created</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {clientTickets.map((ticket) => (
-                          <tr key={ticket._id}>
-                            <td>{ticket.subject}</td>
-                            <td>
-                              <Badge bg={ticket.status === 'open' ? 'success' : 'secondary'}>
-                                {ticket.status}
-                              </Badge>
-                            </td>
-                            <td>{ticket.priority}</td>
-                            <td>{new Date(ticket.createdAt).toLocaleDateString()}</td>
-                            <td>
-                              {ticket.status === 'open' && (
-                                <Button
-                                  variant="success"
-                                  size="sm"
+                                  className="ms-2"
                                   onClick={() => handleResolveTicket(ticket._id)}
                                 >
                                   Resolve

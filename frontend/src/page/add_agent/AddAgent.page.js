@@ -47,10 +47,16 @@ const AddAgent = () => {
         setSuccess('Invitation sent successfully');
         setEmail('');
         fetchPendingInvitations(); // Refresh the list
+        fetchAssignedAgents(); // Also refresh assigned agents
+      } else {
+        setError(response.data.message || 'Failed to send invitation');
       }
     } catch (error) {
       console.error('Error sending invitation:', error);
-      setError(error.response?.data?.message || 'Error sending invitation. Please make sure the email is correct and the user exists.');
+      // Only show error if it's not a success response
+      if (!error.response?.data?.success) {
+        setError(error.response?.data?.message || 'Error sending invitation. Please make sure the email is correct and the user exists.');
+      }
     }
   };
 
