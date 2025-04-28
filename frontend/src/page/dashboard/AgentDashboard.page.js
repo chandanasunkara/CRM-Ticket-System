@@ -168,6 +168,12 @@ const AgentDashboard = () => {
   const handleRefresh = () => {
     setLoading(true);
     setRefreshKey(prev => prev + 1);
+    // Force refresh of all data
+    fetchStats();
+    fetchAllOpenTickets();
+    if (selectedClient) {
+      fetchClientTickets(selectedClient._id);
+    }
   };
 
   if (loading) {
