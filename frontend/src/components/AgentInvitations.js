@@ -64,7 +64,7 @@ const AgentInvitations = () => {
         <Table striped bordered hover>
           <thead>
             <tr>
-              <th>Client</th>
+              <th>Client Email</th>
               <th>Status</th>
               <th>Date</th>
               <th>Actions</th>
@@ -73,7 +73,7 @@ const AgentInvitations = () => {
           <tbody>
             {invitations.map((invitation) => (
               <tr key={invitation._id}>
-                <td>{invitation.client.name}</td>
+                <td>{invitation.client.email}</td>
                 <td>
                   <Badge bg={
                     invitation.status === 'pending' ? 'warning' :

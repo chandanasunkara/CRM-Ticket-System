@@ -6,6 +6,7 @@ import networkMap from '../../assets/img/network-map.png';
 import './entry.style.css';
 import api from '../../config/api';
 import { useNavigate } from 'react-router-dom';
+import { Alert } from 'react-bootstrap';
 
 export const Entry = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export const Entry = () => {
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('customer');
   const [frmLoad, setfrmLoad] = useState('login');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleOnchange = e => {
     const {name, value} = e.target;
@@ -61,8 +63,13 @@ export const Entry = () => {
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       
-      // Redirect to dashboard
-      navigate('/dashboard');
+      // Show success message
+      setShowSuccess(true);
+      
+      // Redirect to dashboard after a short delay
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
     } catch (error) {
       console.error('Login failed:', error);
       alert('Login failed. Please try again.');
@@ -82,7 +89,7 @@ export const Entry = () => {
     } catch (error) {
       console.error('Password reset failed:', error);
       alert('Failed to send reset instructions. Please try again.');
-    }
+  }
   };
 
   const handleOnRegisterSubmit = async e => {
@@ -110,58 +117,64 @@ export const Entry = () => {
     } catch (error) {
       console.error('Registration failed:', error);
       alert('Registration failed. Please try again.');
-    }
+  }
   };
 
   const formSwitcher = frmType => {
     setfrmLoad(frmType);
   };
 
-  return (
-    <div className="entry-page">
-      <div className="left-panel">
-        <img src={networkMap} alt="network-map" className="network-image" />
-        <h1>Hello CRM! 👋</h1>
-        <p>From Chaos to Clarity — Your Smart CRM for Smarter Customer Journeys.<br />
-        Smarter Conversations. Stronger Relationships. Better Business.</p>
-      </div>
+ return (
+  <div className="entry-page">
+  <div className="left-panel">
+  <img src={networkMap} alt="network-map" className="network-image" />
+      <h1>Hello CRM! 👋</h1>
+      <p>From Chaos to Clarity — Your Smart CRM for Smarter Customer Journeys.<br />
+      Smarter Conversations. Stronger Relationships. Better Business.</p>
+    </div>
 
-      <div className="right-panel">
-        <div className="login-card">
-          {frmLoad === 'login' && (
-            <LoginForm
-              handleOnchange={handleOnchange}
-              handleOnSubmit={handleOnSubmit}
-              formSwitcher={formSwitcher}
-              email={email}
-              password={password}
-            />
-          )}
-          {frmLoad === 'reset' && (
-            <ResetPassword
-              handleOnchange={handleOnchange}
-              handleOnResetSubmit={handleOnResetSubmit}
-              formSwitcher={formSwitcher}
-              email={email}
-            />
-          )}
-          {frmLoad === 'register' && (
-            <RegisterForm
-              handleOnchange={handleOnchange}
-              handleOnRegisterSubmit={handleOnRegisterSubmit}
-              formSwitcher={formSwitcher}
-              name={name}
-              email={email}
-              password={password}
-              confirmPassword={confirmPassword}
+    <div className="right-panel">
+      <div className="login-card">
+        {showSuccess && (
+          <Alert variant="success" className="fade show" onClose={() => setShowSuccess(false)} dismissible>
+            <Alert.Heading>Login Successful!</Alert.Heading>
+            <p>Redirecting you to the dashboard...</p>
+          </Alert>
+        )}
+        {frmLoad === 'login' && (
+          <LoginForm
+            handleOnchange={handleOnchange}
+            handleOnSubmit={handleOnSubmit}
+            formSwitcher={formSwitcher}
+            email={email}
+            password={password}
+          />
+        )}
+        {frmLoad === 'reset' && (
+          <ResetPassword
+            handleOnchange={handleOnchange}
+            handleOnResetSubmit={handleOnResetSubmit}
+            formSwitcher={formSwitcher}
+            email={email}
+          />
+        )}
+        {frmLoad === 'register' && (
+          <RegisterForm
+            handleOnchange={handleOnchange}
+            handleOnRegisterSubmit={handleOnRegisterSubmit}
+            formSwitcher={formSwitcher}
+            name={name}
+            email={email}
+            password={password}
+            confirmPassword={confirmPassword}
               phone={phone}
               company={company}
               role={role}
-            />
-          )}
-        </div>
+          />
+        )}
       </div>
     </div>
+  </div>
   );
 };
 

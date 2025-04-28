@@ -64,8 +64,8 @@ const TicketConversations = () => {
 
       if (response.data && response.data.data) {
         setTicket(response.data.data);
-      setReplyText(""); 
-    }
+        setReplyText(""); 
+      }
     } catch (error) {
       console.error('Error submitting reply:', error);
       setError('Failed to submit reply');
@@ -104,6 +104,19 @@ const TicketConversations = () => {
 
   return (
     <Container>
+      <Row className="mt-3 mb-3">
+        <Col xs="auto">
+          <Button 
+            variant="outline-secondary" 
+            onClick={() => navigate(-1)}
+            className="d-flex align-items-center"
+          >
+            <i className="fas fa-arrow-left me-2"></i>
+            Back
+          </Button>
+        </Col>
+      </Row>
+
       <Row className="mt-3">
         <Col>
           <h2>Ticket Details</h2>
@@ -136,8 +149,8 @@ const TicketConversations = () => {
               <div key={index} className="mb-3 p-3 border rounded">
                 <p><strong>{comment.user?.name || 'Unknown User'}:</strong> {comment.text}</p>
                 <small className="text-muted">{new Date(comment.createdAt).toLocaleString()}</small>
-            </div>
-          ))}
+              </div>
+            ))}
           </Col>
         </Row>
       )}
@@ -150,13 +163,13 @@ const TicketConversations = () => {
               <Form.Control
                 as="textarea"
                 rows={3}
-          value={replyText}
-          onChange={(e) => setReplyText(e.target.value)}
-          placeholder="Type your reply here..."
-        />
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Type your reply here..."
+              />
             </Form.Group>
             <Button variant="success" type="submit">
-          Submit Reply
+              Submit Reply
             </Button>
           </Form>
         </Col>

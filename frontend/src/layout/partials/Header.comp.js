@@ -27,6 +27,9 @@ const Header = () => {
           {userRole === 'customer' && (
             <Link to="/add-agent" className="nav-link">Add Agent</Link>
           )}
+          {userRole === 'agent' && (
+            <Link to="/invitations" className="nav-link">Invitations</Link>
+          )}
           <Link to="/profile" className="nav-link">Profile</Link>
           <Link to="/" className="nav-link">Logout</Link>
         </Nav>

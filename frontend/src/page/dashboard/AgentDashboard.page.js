@@ -35,7 +35,12 @@ const AgentDashboard = () => {
       try {
         setLoading(true);
         setError(null);
-        await Promise.all([fetchStats(), fetchClients(), fetchAllOpenTickets()]);
+        // Only fetch stats and clients initially
+        await Promise.all([fetchStats(), fetchClients()]);
+        // Fetch open tickets only if needed
+        if (!selectedClient) {
+          await fetchAllOpenTickets();
+        }
       } catch (err) {
         console.error('Error loading dashboard:', err);
         if (err.response?.status === 401) {
@@ -54,10 +59,12 @@ const AgentDashboard = () => {
     // Set up interval for automatic updates
     const interval = setInterval(() => {
       fetchStats();
-      fetchAllOpenTickets();
-    if (selectedClient) {
-      fetchClientTickets(selectedClient._id);
-    }
+      if (!selectedClient) {
+        fetchAllOpenTickets();
+      }
+      if (selectedClient) {
+        fetchClientTickets(selectedClient._id);
+      }
     }, 30000); // Update every 30 seconds
 
     return () => clearInterval(interval);
@@ -65,11 +72,26 @@ const AgentDashboard = () => {
 
   const fetchAllOpenTickets = async () => {
     try {
-      const response = await api.get('/api/tickets?status=open');
-      const sortedTickets = response.data.data.sort((a, b) => 
+      const url = selectedClient 
+        ? `/api/tickets?customer=${selectedClient._id}&status=open`
+        : '/api/tickets?status=open';
+      const response = await api.get(url);
+      const tickets = response.data.data || [];
+      
+      // Filter tickets to ensure we only get tickets for the selected client
+      const filteredTickets = selectedClient 
+        ? tickets.filter(ticket => ticket.customer?._id === selectedClient._id)
+        : tickets;
+      
+      // Sort tickets by creation date
+      const sortedTickets = filteredTickets.sort((a, b) => 
         new Date(b.createdAt) - new Date(a.createdAt)
       );
-      setAllOpenTickets(sortedTickets || []);
+      
+      // Log the filtered and sorted tickets for debugging
+      console.log('Filtered and sorted tickets:', sortedTickets);
+      
+      setAllOpenTickets(sortedTickets);
     } catch (error) {
       console.error('Error fetching open tickets:', error);
       if (error.response?.status === 401) {
@@ -82,7 +104,19 @@ const AgentDashboard = () => {
   const fetchClients = async () => {
     try {
       const response = await api.get('/api/users/clients');
-      setClients(response.data.data || []);
+      const clients = response.data.data || [];
+      // Fetch tickets for each client to get accurate counts
+      const clientsWithTicketCounts = await Promise.all(
+        clients.map(async (client) => {
+          const ticketsResponse = await api.get(`/api/tickets?customer=${client._id}`);
+          const clientTickets = ticketsResponse.data.data || [];
+          return {
+            ...client,
+            openTicketsCount: clientTickets.filter(t => t.status === 'open').length
+          };
+        })
+      );
+      setClients(clientsWithTicketCounts);
     } catch (error) {
       console.error('Error fetching clients:', error);
       if (error.response?.status === 401) {
@@ -116,13 +150,31 @@ const AgentDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await api.get('/api/tickets');
-      const stats = response.data.stats || {
-        total: 0,
-        pending: 0,
-        open: 0,
-        closed: 0
+      const url = selectedClient 
+        ? `/api/tickets?customer=${selectedClient._id}`
+        : '/api/tickets';
+      const response = await api.get(url);
+      const tickets = response.data.data || [];
+      
+      // Filter tickets to ensure we only get tickets for the selected client
+      const filteredTickets = selectedClient 
+        ? tickets.filter(ticket => ticket.customer?._id === selectedClient._id)
+        : tickets;
+      
+      // Log the raw data for debugging
+      console.log('Raw tickets data:', filteredTickets);
+      
+      // Calculate stats from the filtered tickets array
+      const stats = {
+        total: filteredTickets.length,
+        pending: filteredTickets.filter(t => t.status === 'pending').length,
+        open: filteredTickets.filter(t => t.status === 'open').length,
+        closed: filteredTickets.filter(t => t.status === 'closed').length
       };
+
+      // Log the calculated stats for debugging
+      console.log('Calculated stats:', stats);
+
       setStats(stats);
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -159,8 +211,8 @@ const AgentDashboard = () => {
   // Get current tickets for pagination
   const indexOfLastTicket = currentPage * ticketsPerPage;
   const indexOfFirstTicket = indexOfLastTicket - ticketsPerPage;
-  const currentTickets = allOpenTickets.slice(indexOfFirstTicket, indexOfLastTicket);
-  const totalPages = Math.ceil(allOpenTickets.length / ticketsPerPage);
+  const currentTickets = selectedClient ? clientTickets.slice(indexOfFirstTicket, indexOfLastTicket) : [];
+  const totalPages = Math.ceil((selectedClient ? clientTickets.length : 0) / ticketsPerPage);
 
   // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -240,7 +292,7 @@ const AgentDashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {currentTickets.map((ticket) => (
+                      {allOpenTickets.map((ticket) => (
                         <tr key={ticket._id}>
                           <td>{ticket.subject}</td>
                           <td>{ticket.customer?.name || 'Unknown'}</td>
@@ -266,29 +318,6 @@ const AgentDashboard = () => {
                       ))}
                     </tbody>
                   </Table>
-                  {totalPages > 1 && (
-                    <div className="d-flex justify-content-center mt-3">
-                      <Pagination>
-                        <Pagination.First onClick={() => paginate(1)} />
-                        <Pagination.Prev 
-                          onClick={() => paginate(currentPage > 1 ? currentPage - 1 : 1)} 
-                        />
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                          <Pagination.Item
-                            key={number}
-                            active={number === currentPage}
-                            onClick={() => paginate(number)}
-                          >
-                            {number}
-                          </Pagination.Item>
-                        ))}
-                        <Pagination.Next 
-                          onClick={() => paginate(currentPage < totalPages ? currentPage + 1 : totalPages)} 
-                        />
-                        <Pagination.Last onClick={() => paginate(totalPages)} />
-                      </Pagination>
-                    </div>
-                  )}
                 </Card.Body>
               </Card>
             </Col>
@@ -319,11 +348,11 @@ const AgentDashboard = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {clientTickets.map((ticket) => (
+                        {currentTickets.map((ticket) => (
                           <tr key={ticket._id}>
                             <td>{ticket.subject}</td>
                             <td>
-                              <Badge bg={ticket.status === 'open' ? 'danger' : ticket.status === 'in-progress' ? 'warning' : 'success'}>
+                              <Badge bg={ticket.status === 'open' ? 'success' : 'secondary'}>
                                 {ticket.status}
                               </Badge>
                             </td>
@@ -332,15 +361,15 @@ const AgentDashboard = () => {
                               <Button
                                 variant="primary"
                                 size="sm"
+                                className="me-2"
                                 onClick={() => navigate(`/ticket/${ticket._id}`)}
                               >
                                 View
                               </Button>
-                              {ticket.status !== 'closed' && (
+                              {ticket.status === 'open' && (
                                 <Button
                                   variant="success"
                                   size="sm"
-                                  className="ms-2"
                                   onClick={() => handleResolveTicket(ticket._id)}
                                 >
                                   Resolve
@@ -351,6 +380,19 @@ const AgentDashboard = () => {
                         ))}
                       </tbody>
                     </Table>
+                    {clientTickets.length > ticketsPerPage && (
+                      <Pagination className="mt-3">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                          <Pagination.Item
+                            key={number}
+                            active={number === currentPage}
+                            onClick={() => paginate(number)}
+                          >
+                            {number}
+                          </Pagination.Item>
+                        ))}
+                      </Pagination>
+                    )}
                   </Card.Body>
                 </Card>
               </Col>
@@ -394,7 +436,7 @@ const AgentDashboard = () => {
                           <td>{client.email}</td>
                           <td>
                             <Badge bg="primary">
-                              {clientTickets.filter(t => t.status === 'open').length}
+                              {client.openTicketsCount}
                             </Badge>
                           </td>
                           <td>
