@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, Alert, Table } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Alert, Table, Badge } from 'react-bootstrap';
 import { PageBreadcrumb } from '../../components/breadcrumb/Breadcrumb.comp';
 import api from '../../config/api';
 
@@ -8,17 +8,28 @@ const AddAgent = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [assignedAgents, setAssignedAgents] = useState([]);
+  const [pendingInvitations, setPendingInvitations] = useState([]);
 
   useEffect(() => {
     fetchAssignedAgents();
+    fetchPendingInvitations();
   }, []);
 
   const fetchAssignedAgents = async () => {
     try {
       const response = await api.get('/api/users/agents');
-      setAssignedAgents(response.data.data);
+      setAssignedAgents(response.data.data || []);
     } catch (error) {
       console.error('Error fetching assigned agents:', error);
+    }
+  };
+
+  const fetchPendingInvitations = async () => {
+    try {
+      const response = await api.get('/api/users/pending-invitations');
+      setPendingInvitations(response.data.data || []);
+    } catch (error) {
+      console.error('Error fetching pending invitations:', error);
     }
   };
 
@@ -28,23 +39,28 @@ const AddAgent = () => {
     setSuccess('');
 
     try {
-      // Get the current user's ID (client)
-      const userResponse = await api.get('/api/auth/me');
-      const clientId = userResponse.data.data._id;
-
-      // Assign the agent to the client
-      await api.post('/api/users/assign-agent', {
-        agentEmail: email,
-        clientId: clientId
+      const response = await api.post('/api/users/assign-agent', {
+        agentEmail: email
       });
 
-      setSuccess('Agent assigned successfully');
-      setEmail('');
-      fetchAssignedAgents(); // Refresh the list
+      if (response.data.success) {
+        setSuccess('Invitation sent successfully');
+        setEmail('');
+        fetchPendingInvitations(); // Refresh the list
+      }
     } catch (error) {
-      console.error('Error assigning agent:', error);
-      setError(error.response?.data?.message || 'Error assigning agent. Please make sure the email is correct and the user exists.');
+      console.error('Error sending invitation:', error);
+      setError(error.response?.data?.message || 'Error sending invitation. Please make sure the email is correct and the user exists.');
     }
+  };
+
+  const getStatusBadge = (status) => {
+    const variants = {
+      'pending': 'warning',
+      'accepted': 'success',
+      'rejected': 'danger'
+    };
+    return <Badge bg={variants[status] || 'secondary'}>{status}</Badge>;
   };
 
   return (
@@ -73,16 +89,16 @@ const AddAgent = () => {
             </Form.Group>
 
             <Button variant="primary" type="submit">
-              Assign Agent
+              Send Invitation
             </Button>
           </Form>
         </Col>
       </Row>
 
-      {assignedAgents.length > 0 && (
+      {(assignedAgents.length > 0 || pendingInvitations.length > 0) && (
         <Row className="mt-4">
           <Col>
-            <h4>Your Assigned Agents</h4>
+            <h4>Your Agents</h4>
             <Table striped hover>
               <thead>
                 <tr>
@@ -96,7 +112,14 @@ const AddAgent = () => {
                   <tr key={agent._id}>
                     <td>{agent.name}</td>
                     <td>{agent.email}</td>
-                    <td>Active</td>
+                    <td>{getStatusBadge('accepted')}</td>
+                  </tr>
+                ))}
+                {pendingInvitations.map(invitation => (
+                  <tr key={invitation._id}>
+                    <td>{invitation.agent.name}</td>
+                    <td>{invitation.agent.email}</td>
+                    <td>{getStatusBadge(invitation.status)}</td>
                   </tr>
                 ))}
               </tbody>

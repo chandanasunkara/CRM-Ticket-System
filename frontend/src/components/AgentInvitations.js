@@ -17,7 +17,7 @@ const AgentInvitations = () => {
       setLoading(true);
       setError(null);
       const response = await api.get('/api/users/invitations');
-      setInvitations(response.data);
+      setInvitations(response.data.data || []);
     } catch (err) {
       console.error('Error fetching invitations:', err);
       setError('Failed to fetch invitations');
