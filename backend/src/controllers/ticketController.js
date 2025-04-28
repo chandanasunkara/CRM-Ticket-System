@@ -11,11 +11,11 @@ exports.getTickets = asyncHandler(async (req, res, next) => {
   // Add role-based filtering
   if (req.user.role === 'customer') {
     // Customers can only see their own tickets
-    req.query.customer = req.user.id;
+    req.query.customer = req.user._id;
   } else if (req.user.role === 'agent') {
     // Agents can see tickets assigned to them or unassigned
     req.query.$or = [
-      { assignedTo: req.user.id },
+      { assignedTo: req.user._id },
       { assignedTo: { $exists: false } },
       { assignedTo: null }
     ];
