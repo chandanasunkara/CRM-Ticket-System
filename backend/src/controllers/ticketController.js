@@ -13,12 +13,18 @@ exports.getTickets = asyncHandler(async (req, res, next) => {
     // Customers can only see their own tickets
     req.query.customer = req.user._id;
   } else if (req.user.role === 'agent') {
-    // Agents can see tickets assigned to them or unassigned
-    req.query.$or = [
-      { assignedTo: req.user._id },
-      { assignedTo: { $exists: false } },
-      { assignedTo: null }
-    ];
+    // Agents can only see tickets from their assigned clients
+    const agent = await User.findById(req.user._id).populate('clients');
+    if (!agent.clients || agent.clients.length === 0) {
+      // If agent has no clients, return empty result
+      return res.status(200).json({
+        success: true,
+        count: 0,
+        data: []
+      });
+    }
+    const clientIds = agent.clients.map(client => client._id);
+    req.query.customer = { $in: clientIds };
   }
   // Admins can see all tickets
 

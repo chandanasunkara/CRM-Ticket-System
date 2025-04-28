@@ -282,4 +282,33 @@ exports.getPendingInvitations = async (req, res) => {
       error: error.message 
     });
   }
+};
+
+// @desc    Get agent's clients
+// @route   GET /api/users/clients
+// @access  Private
+exports.getAgentClients = async (req, res) => {
+  try {
+    const agentId = req.user._id;
+    const agent = await User.findById(agentId).populate('clients', 'name email company phone');
+    
+    if (!agent) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Agent not found' 
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: agent.clients
+    });
+  } catch (error) {
+    console.error('Error fetching agent clients:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching agent clients',
+      error: error.message 
+    });
+  }
 }; 
