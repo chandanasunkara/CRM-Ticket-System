@@ -4,6 +4,10 @@ import logo from '../../assets/img/logo.png'
 import { Link } from 'react-router-dom';
 
 const Header = () => {
+  // Get user data from localStorage
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const userRole = user.role || 'customer';
+
   return <Navbar
   collapseOnSelect
   bg="success"
@@ -16,12 +20,18 @@ const Header = () => {
     <Navbar.Toggle aria-controls='basic-navbar-nav' />
     <Navbar.Collapse id='basic-navbar-nav'>
         <Nav className="ms-auto">
-        <Link to="/dashboard" className="nav-link">Dashboard</Link>
-
-<Link to="/add-client" className="nav-link">Add Client</Link>
-
-<Link to="/" className="nav-link">Logout</Link>
-
+          <div className="nav-link text-light">
+            Role: {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
+          </div>
+          <Link to="/dashboard" className="nav-link">Dashboard</Link>
+          {userRole === 'customer' && (
+            <Link to="/add-agent" className="nav-link">Add Agent</Link>
+          )}
+          {userRole === 'agent' && (
+            <Link to="/invitations" className="nav-link">Invitations</Link>
+          )}
+          <Link to="/profile" className="nav-link">Profile</Link>
+          <Link to="/" className="nav-link">Logout</Link>
         </Nav>
     </Navbar.Collapse>
   </Navbar>;

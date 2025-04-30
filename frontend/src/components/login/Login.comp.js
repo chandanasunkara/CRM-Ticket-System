@@ -9,7 +9,7 @@ const LoginForm = ({handleOnchange,handleOnSubmit, formSwitcher, email, password
   return (
     <Container>
       <Row className="justify-content-center">
-        <Col md={6}>
+        <Col md={10}>
           <div className="login-card">
             <h1 className="text-center">Client Login</h1>
             <hr />

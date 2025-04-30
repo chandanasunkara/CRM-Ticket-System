@@ -16,14 +16,13 @@ export const TicketTable = ({ tickets }) => {
       <tbody>
         {tickets.length ? (
           tickets.map((row) => (
-            <tr key={row.id}>
-              <td>{row.id}</td>
+            <tr key={row._id}>
+              <td>{row._id.substring(18, 24)}</td>
               <td>
-                <Link to={`/ticket/${row.id}`}>{row.subject}</Link>
+                <Link to={`/ticket/${row._id}`}>{row.subject}</Link>
               </td>
               <td>{row.status}</td>
-              <td>{new Date(row.openAt).toLocaleDateString("en-GB")}</td>
-
+              <td>{new Date(row.createdAt).toLocaleDateString()}</td>
             </tr>
           ))
         ) : (

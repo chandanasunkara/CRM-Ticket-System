@@ -1,21 +1,28 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React ,{useState} from 'react';
 import LoginForm from '../../components/login/Login.comp';
 import ResetPassword from '../../components/password-reset/PasswordReset.comp';
 import RegisterForm from '../../components/register/Register.comp';
 import networkMap from '../../assets/img/network-map.png';
 import './entry.style.css';
+import api from '../../config/api';
+import { useNavigate } from 'react-router-dom';
+import { Alert } from 'react-bootstrap';
 
 export const Entry = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [phone, setPhone] = useState('');
+  const [company, setCompany] = useState('');
+  const [role, setRole] = useState('customer');
   const [frmLoad, setfrmLoad] = useState('login');
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleOnchange = (e) => {
-    const { name, value } = e.target;
-    switch (name) {
+  const handleOnchange = e => {
+    const {name, value} = e.target;
+    switch(name) {
       case 'name':
         setName(value);
         break;
@@ -28,50 +35,67 @@ export const Entry = () => {
       case 'confirmPassword':
         setConfirmPassword(value);
         break;
+      case 'phone':
+        setPhone(value);
+        break;
+      case 'company':
+        setCompany(value);
+        break;
+      case 'role':
+        setRole(value);
+        break;
       default:
         break;
     }
   };
 
-  const handleOnSubmit = async (e) => {
+  const handleOnSubmit = async e => {
     e.preventDefault();
-
-    if (!email || !password) {
+    if(!email || !password) {
       return alert("Fill up the form!");
     }
-
+    
     try {
-      const { data } = await axios.post('http://localhost:5000/api/auth/login', {
-        email,
-        password,
-      });
-      console.log('Login successful:', data);
-      localStorage.setItem('token', data.token);
-      alert('Login successful!');
-      // Redirect user to dashboard or home page
-      window.location.href = '/dashboard';
+      const response = await api.post('/api/auth/login', { email, password });
+      console.log('Login successful:', response.data);
+      
+      // Store the token in localStorage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      // Show success message
+      setShowSuccess(true);
+      
+      // Redirect to dashboard after a short delay
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1500);
     } catch (error) {
-      console.error('Login failed:', error.response?.data?.message || error.message);
-      alert('Login failed!');
+      console.error('Login failed:', error);
+      alert('Login failed. Please try again.');
     }
   };
 
-  const handleOnResetSubmit = (e) => {
+  const handleOnResetSubmit = async e => {
     e.preventDefault();
-
-    if (!email) {
+    if(!email) {
       return alert("Please enter the email");
     }
-
-    console.log(email);
     
+    try {
+      const response = await api.post('/api/auth/reset-password', { email });
+      console.log('Password reset email sent:', response.data);
+      alert('Password reset instructions sent to your email.');
+    } catch (error) {
+      console.error('Password reset failed:', error);
+      alert('Failed to send reset instructions. Please try again.');
+  }
   };
 
-  const handleOnRegisterSubmit = async (e) => {
+  const handleOnRegisterSubmit = async e => {
     e.preventDefault();
-
     if (!name || !email || !password || !confirmPassword) {
-      return alert("Please fill in all fields");
+      return alert("Please fill in all required fields");
     }
 
     if (password !== confirmPassword) {
@@ -79,69 +103,78 @@ export const Entry = () => {
     }
 
     try {
-      const { data } = await axios.post('http://localhost:5000/api/auth/register', {
-        name,
-        email,
+      const response = await api.post('/api/auth/register', { 
+        name, 
+        email, 
         password,
+        phone,
+        company,
+        role
       });
-      console.log('Registration successful:', data);
+      console.log('Registration successful:', response.data);
       alert('Registration successful! Please login.');
-      // After successful register, switch to login form
       setfrmLoad('login');
     } catch (error) {
-      console.error('Registration failed:', error.response?.data?.message || error.message);
-      alert('Registration failed!');
-    }
+      console.error('Registration failed:', error);
+      alert('Registration failed. Please try again.');
+  }
   };
 
-  const formSwitcher = (frmType) => {
+  const formSwitcher = frmType => {
     setfrmLoad(frmType);
   };
 
-  return (
-    <div className="entry-page">
-      <div className="left-panel">
-        <img src={networkMap} alt="network-map" className="network-image" />
-        <h1>Hello CRM! 👋</h1>
-        <p>
-          From Chaos to Clarity — Your Smart CRM for Smarter Customer Journeys.
-          <br />
-          Smarter Conversations. Stronger Relationships. Better Business.
-        </p>
-      </div>
+ return (
+  <div className="entry-page">
+  <div className="left-panel">
+  <img src={networkMap} alt="network-map" className="network-image" />
+      <h1>Hello CRM! 👋</h1>
+      <p>From Chaos to Clarity — Your Smart CRM for Smarter Customer Journeys.<br />
+      Smarter Conversations. Stronger Relationships. Better Business.</p>
+    </div>
 
-      <div className="right-panel">
-        <div className="login-card">
-          {frmLoad === 'login' && (
-            <LoginForm
-              handleOnchange={handleOnchange}
-              handleOnSubmit={handleOnSubmit}
-              formSwitcher={formSwitcher}
-              email={email}
-              password={password}
-            />
-          )}
-          {frmLoad === 'reset' && (
-            <ResetPassword
-              handleOnchange={handleOnchange}
-              handleOnResetSubmit={handleOnResetSubmit}
-              formSwitcher={formSwitcher}
-              email={email}
-            />
-          )}
-          {frmLoad === 'register' && (
-            <RegisterForm
-              handleOnchange={handleOnchange}
-              handleOnRegisterSubmit={handleOnRegisterSubmit}
-              formSwitcher={formSwitcher}
-              name={name}
-              email={email}
-              password={password}
-              confirmPassword={confirmPassword}
-            />
-          )}
-        </div>
+    <div className="right-panel">
+      <div className="login-card">
+        {showSuccess && (
+          <Alert variant="success" className="fade show" onClose={() => setShowSuccess(false)} dismissible>
+            <Alert.Heading>Login Successful!</Alert.Heading>
+            <p>Redirecting you to the dashboard...</p>
+          </Alert>
+        )}
+        {frmLoad === 'login' && (
+          <LoginForm
+            handleOnchange={handleOnchange}
+            handleOnSubmit={handleOnSubmit}
+            formSwitcher={formSwitcher}
+            email={email}
+            password={password}
+          />
+        )}
+        {frmLoad === 'reset' && (
+          <ResetPassword
+            handleOnchange={handleOnchange}
+            handleOnResetSubmit={handleOnResetSubmit}
+            formSwitcher={formSwitcher}
+            email={email}
+          />
+        )}
+        {frmLoad === 'register' && (
+          <RegisterForm
+            handleOnchange={handleOnchange}
+            handleOnRegisterSubmit={handleOnRegisterSubmit}
+            formSwitcher={formSwitcher}
+            name={name}
+            email={email}
+            password={password}
+            confirmPassword={confirmPassword}
+              phone={phone}
+              company={company}
+              role={role}
+          />
+        )}
       </div>
     </div>
+  </div>
   );
 };
+
