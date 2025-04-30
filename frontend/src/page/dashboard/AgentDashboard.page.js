@@ -150,26 +150,19 @@ const AgentDashboard = () => {
 
   const fetchStats = async () => {
     try {
-      const url = selectedClient 
-        ? `/api/tickets?customer=${selectedClient._id}`
-        : '/api/tickets';
-      const response = await api.get(url);
+      // Always fetch all tickets for the agent, ignoring selected client
+      const response = await api.get('/api/tickets');
       const tickets = response.data.data || [];
       
-      // Filter tickets to ensure we only get tickets for the selected client
-      const filteredTickets = selectedClient 
-        ? tickets.filter(ticket => ticket.customer?._id === selectedClient._id)
-        : tickets;
-      
       // Log the raw data for debugging
-      console.log('Raw tickets data:', filteredTickets);
+      console.log('Raw tickets data:', tickets);
       
-      // Calculate stats from the filtered tickets array
+      // Calculate stats from all tickets
       const stats = {
-        total: filteredTickets.length,
-        pending: filteredTickets.filter(t => t.status === 'pending').length,
-        open: filteredTickets.filter(t => t.status === 'open').length,
-        closed: filteredTickets.filter(t => t.status === 'closed').length
+        total: tickets.length,
+        pending: tickets.filter(t => t.status === 'pending').length,
+        open: tickets.filter(t => t.status === 'open').length,
+        closed: tickets.filter(t => t.status === 'closed').length
       };
 
       // Log the calculated stats for debugging
