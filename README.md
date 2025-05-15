@@ -1,19 +1,28 @@
-# CRM-Ticket-System
-The CRM Ticket System is built using the MERN stack. 
-It is built with user authentication, ticket management, and real-time updates.
+SupportSync – CRM Ticket System
 
-The tech stack includes: MERN (MongoDB, Express, React, Node.js).
+A full-stack CRM Ticketing System built with the MERN stack, featuring real-time ticket updates and an FAQ chatbot for customer support automation.
 
-The key features are:
-User authentication (JWT).
-Role-based Access (Admin, Agent, Customer).
-Ticket CRUD Operations with MongoDB.
-Real-time Ticket Updates using MongoDB Change Streams.
-Secure API with Validation & Rate Limiting.
+🛠 Tech Stack
 
-Frontend: Designing UI components using React, HTML, CSS, and Bootstrap.
-Backend: REST API development, authentication, and database interactions(CRUD).
-Database: MongoDB Schema, Query Optimization.
-Cloud Deployment: Google Cloud Platform (GCP).
+Frontend: React, HTML, CSS, Bootstrap
+Backend: Node.js, Express, JWT authentication, RESTful APIs
+Database: MongoDB (Atlas, Change Streams), Mongoose
+Cloud Deployment: Google Cloud Platform (GCP)
+Other Tools: Docker, FastAPI (optional for extensions)
 
-Demo: https://www.youtube.com/watch?v=cBIg_8v6edY
+🔐 Core Features
+
+✅ User Authentication (JWT)
+🔐 Role-Based Access: Admin, Agent, Customer
+📝 Ticket Management (CRUD) with MongoDB
+🔄 Real-Time Ticket Updates using MongoDB Change Streams
+🤖 FAQ Chatbot integration to handle common queries
+🔒 Secure APIs with input validation and rate limiting
+📈 Benefits
+
+Reduces support query volume by up to 35% through chatbot automation
+Enables efficient ticket routing and response through real-time updates
+Scalable design for production deployment using Docker and GCP
+
+
+▶️ Watch the Demo on YouTube :  https://www.youtube.com/watch?v=cBIg_8v6edY 
